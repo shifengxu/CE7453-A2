@@ -1,4 +1,6 @@
 using CurveLib;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using Timer = System.Windows.Forms.Timer;
 
 namespace ParametricCurve
@@ -14,10 +16,17 @@ namespace ParametricCurve
 
         private string saveEquationsFilePath = ".\\equations.txt";
 
-        private Graphics _g;
-        private CurveCanvas _cc;
+        // Scaling (zoom in/out) related
+        private bool _scaleXFlag = false;
+        private bool _scaleYFlag = false;
+        private int _scaleXMouseDownValue = 0;
+        private int _scaleYMouseDownValue = 0;
 
-        private Timer panel1ResizeTimer = new Timer();
+        private Graphics _g;
+        private readonly CurveCanvas _cc;
+        private List<CurveCanvasPoint>? _curvePoints;
+
+        private readonly Timer panel1ResizeTimer = new Timer();
 
         public Form1()
         {
@@ -29,6 +38,30 @@ namespace ParametricCurve
             panel1ResizeTimer.Interval = 1000;
             panel1ResizeTimer.Tick += new EventHandler(panel1ResizeTimerTick);
             panel1ResizeTimer.Enabled = false;
+
+            comboBoxX.Items.Add("x(u)");
+            comboBoxX.Items.Add("y(u)");
+            comboBoxX.Items.Add("u");
+            comboBoxX.SelectedIndex = 0;
+            comboBoxY.Items.Add("x(u)");
+            comboBoxY.Items.Add("y(u)");
+            comboBoxY.Items.Add("u");
+            comboBoxY.SelectedIndex = 1;
+
+            // Dynamic evaluation by string expression, for X and Y coordinate.
+            // But it is too slow. So we have to abandon it here.
+            //var xExpr = @"double res;
+            //            res = 1.5 * System.Math.Sin(6.2 * u - 0.027 * 46);
+            //            res = System.Math.Exp(res) + 0.1;
+            //            res = 1.5 * res * System.Math.Cos(12.2 * u);
+            //            return res;";
+            //var yExpr = @"double res;
+            //            res = System.Math.Sin(6.2 * u - 0.027 * 46);
+            //            res = System.Math.Exp(res) + 0.1;
+            //            res = res * System.Math.Sin(12.2 * u);
+            //            return res;";
+            //textBoxX.Text = Regex.Replace(xExpr, @"\r\n\s+", "\r\n");
+            //textBoxY.Text = Regex.Replace(yExpr, @"\r\n\s+", "\r\n");
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -92,6 +125,35 @@ namespace ParametricCurve
 
         private void panel1_MouseMove(object sender, MouseEventArgs e)
         {
+            double x2 = _cc.CanvasX2RealX(e.X);
+            double y2 = _cc.CanvasY2RealY(_cc.CanvasHeight - e.Y);
+            string x2Str = x2.ToString("N", CultureInfo.InvariantCulture);
+            string y2Str = y2.ToString("N", CultureInfo.InvariantCulture);
+            this.toolStripStatusLabel1.Text = $"{x2Str} {y2Str}";
+
+            bool needRedraw = false;
+            double changeX = 1;
+            double changeY = 1;
+            if (_scaleXFlag && _scaleXMouseDownValue != 0)
+            {
+                var newX = e.X;
+                changeX = (double)newX / _scaleXMouseDownValue;
+                textBoxXScale.Text = $"{_cc.TargetRatioX*changeX,5:N2}".Replace(".00", "");
+                needRedraw = true;
+            }
+            if (_scaleYFlag && _scaleYMouseDownValue != 0)
+            {
+                var newY = panel1.Height - e.Y;
+                var oldY = panel1.Height - _scaleYMouseDownValue;
+                changeY = (double)newY / oldY;
+                textBoxYScale.Text = $"{_cc.TargetRatioY*changeY,5:N2}".Replace(".00", "");
+                needRedraw = true;
+            }
+            if (needRedraw)
+            {
+                _g.Clear(Color.White);
+                drawCoordinateLines(_cc.TargetRatioX * changeX, _cc.TargetRatioY * changeY);
+            }
         }
 
         // ******************************************************************** panel1 resize
@@ -124,35 +186,128 @@ namespace ParametricCurve
             panel1ResizeTimer.Start();
         }
 
-        private void panel1ResizeTimerTick(object sender, EventArgs e)
+        private void panel1ResizeTimerTick(object? sender, EventArgs e)
         {
-            // todo: after resize, re-render the graph
+            // after resize, re-render the graph
+            UpdateCanvasAndDrawCurve();
+
             panel1ResizeTimer.Enabled = false;
             panel1ResizeTimer.Stop();
         }
 
         private void buttonPlotCurve_Click(object sender, EventArgs e)
         {
-            var points = _cc.CalcCurve(1000);
+            var xIdx = comboBoxX.SelectedIndex;
+            var yIdx = comboBoxY.SelectedIndex;
+            string[] typeList = new string[] { "x(u)", "y(u)", "u" };
+            var xType = typeList[xIdx];
+            var yType = typeList[yIdx];
+            _curvePoints = _cc.CalcCurveByType(xType, yType, 1000);
+            UpdateCanvasAndDrawCurve();
+        }
 
-            // draw curve by points
-            _g.Clear(Color.White);
-            Pen pen4Curve = new Pen(Color.Red, 2);
-            int pht = _cc.CanvasHeight;
-            int prevCanvasX = points[0].canvasX;
-            int prevCanvasY = points[0].canvasY;
-            int currCanvasX;
-            int currCanvasY;
-            for (int i = 1; i < points.Count; i++)
+        private void comboBoxX_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var idx = comboBoxX.SelectedIndex;
+            if(idx == 0)
             {
-                var p = points[i];
-                currCanvasX = p.canvasX;
-                currCanvasY = p.canvasY;
-                _g.DrawLine(pen4Curve, prevCanvasX, pht - prevCanvasY, currCanvasX, pht - currCanvasY);
-                prevCanvasX = currCanvasX;
-                prevCanvasY = currCanvasY;
+                panelExprX.Visible = true;
+                panelExprX.BackgroundImage = Properties.Resources.CurveX;
             }
+            else if(idx == 1)
+            {
+                panelExprX.Visible = true;
+                panelExprX.BackgroundImage = Properties.Resources.CurveY;
+            }
+            else
+            {
+                panelExprX.Visible = false;
+            }
+        }
 
+        private void comboBoxY_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var idx = comboBoxY.SelectedIndex;
+            if (idx == 0)
+            {
+                panelExprY.Visible = true;
+                panelExprY.BackgroundImage = Properties.Resources.CurveX;
+            }
+            else if (idx == 1)
+            {
+                panelExprY.Visible = true;
+                panelExprY.BackgroundImage = Properties.Resources.CurveY;
+            }
+            else
+            {
+                panelExprY.Visible = false;
+            }
+        }
+
+        private void buttonXScale_Click(object sender, EventArgs e)
+        {
+            if (_scaleXFlag == false)
+            {
+                _scaleXFlag = true;
+                buttonXScale.BackgroundImage = Properties.Resources.ResizeX2;
+            }
+            else
+            {
+                _scaleXFlag = false;
+                buttonXScale.BackgroundImage = Properties.Resources.ResizeX;
+            }
+            UpdatePanel1Cursor();
+        }
+
+        private void buttonYScale_Click(object sender, EventArgs e)
+        {
+            if (_scaleYFlag == false)
+            {
+                _scaleYFlag = true;
+                buttonYScale.BackgroundImage = Properties.Resources.ResizeY2;
+            }
+            else
+            {
+                _scaleYFlag = false;
+                buttonYScale.BackgroundImage = Properties.Resources.ResizeY;
+            }
+            UpdatePanel1Cursor();
+        }
+
+        private void panel1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (_scaleXFlag)
+            {
+                _scaleXMouseDownValue = e.X;
+            }
+            if (_scaleYFlag)
+            {
+                _scaleYMouseDownValue = e.Y;
+            }
+        }
+
+        private void panel1_MouseUp(object sender, MouseEventArgs e)
+        {
+            bool needRedraw = false;
+            if(_scaleXFlag && _scaleXMouseDownValue != 0)
+            {
+                var newX = e.X;
+                double change = (double)newX / _scaleXMouseDownValue;
+                _cc.TargetRatioX *= change;
+                _scaleXMouseDownValue = 0;
+                needRedraw = true;
+            }
+            if(_scaleYFlag && _scaleYMouseDownValue != 0)
+            {
+                var newY = panel1.Height - e.Y;
+                var oldY = panel1.Height - _scaleYMouseDownValue;
+                double change = (double)newY / oldY;
+                _cc.TargetRatioY *= change;
+                _scaleYMouseDownValue = 0;
+                needRedraw = true;
+            }
+            if (needRedraw)
+                DrawCurve();
         }
     }
 }

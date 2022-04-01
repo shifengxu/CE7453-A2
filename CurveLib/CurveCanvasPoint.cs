@@ -14,8 +14,8 @@ namespace CurveLib
          *      Canvas origin point is at bottom left corner;
          *      Panel origin point is at top left corner.
          */
-        public int canvasX;
-        public int canvasY;
+        //public int canvasX;
+        //public int canvasY;
 
         public CurveCanvasPoint(int index, CurveCanvasPoint canvasPoint)
         {
