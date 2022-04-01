@@ -83,6 +83,26 @@ namespace ParametricCurve.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Hand {
+            get {
+                object obj = ResourceManager.GetObject("Hand", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Hand2 {
+            get {
+                object obj = ResourceManager.GetObject("Hand2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap ResizeX {
             get {
                 object obj = ResourceManager.GetObject("ResizeX", resourceCulture);

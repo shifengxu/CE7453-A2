@@ -110,25 +110,39 @@ namespace ParametricCurve
             textBoxYScale.Text = $"{_cc.TargetRatioY,5:N2}".Replace(".00", "");
         }
 
-        private void UpdatePanel1Cursor()
+        private void DrawSamplePoint(double u, double fu)
         {
-            if (_scaleXFlag == false && _scaleYFlag == false)
-            {
-                panel1.Cursor = Cursors.Cross;
-            }
-            else if (_scaleXFlag == true && _scaleYFlag == false)
-            {
-                panel1.Cursor = Cursors.SizeWE;
-            }
-            else if (_scaleXFlag == false && _scaleYFlag == true)
-            {
-                panel1.Cursor = Cursors.SizeNS;
-            }
-            else
-            {
-                panel1.Cursor = Cursors.SizeAll;
-            }
+            int panelX = _cc.RealX2CanvasX(u);
+            int panelY = _cc.CanvasHeight - _cc.RealY2CanvasY(fu);
+            _g.FillEllipse(_brush4SamplePoint, panelX - 3, panelY - 3, 6, 6);
+            _g.DrawString($"({u,5:N3},{fu,5:N3})", panel1.Font, _brush4SamplePoint, panelX, panelY);
         }
 
+        private void ScaleWhenMouseMove(int X, int Y)
+        {
+            bool needRedraw = false;
+            double changeX = 1;
+            double changeY = 1;
+            if (_scaleXFlag && _scaleXMouseDownValue != 0)
+            {
+                var newX = X;
+                changeX = (double)newX / _scaleXMouseDownValue;
+                textBoxXScale.Text = $"{_cc.TargetRatioX * changeX,5:N2}".Replace(".00", "");
+                needRedraw = true;
+            }
+            if (_scaleYFlag && _scaleYMouseDownValue != 0)
+            {
+                var newY = panel1.Height - Y;
+                var oldY = panel1.Height - _scaleYMouseDownValue;
+                changeY = (double)newY / oldY;
+                textBoxYScale.Text = $"{_cc.TargetRatioY * changeY,5:N2}".Replace(".00", "");
+                needRedraw = true;
+            }
+            if (needRedraw)
+            {
+                _g.Clear(Color.White);
+                drawCoordinateLines(_cc.TargetRatioX * changeX, _cc.TargetRatioY * changeY);
+            }
+        }
     }
 }

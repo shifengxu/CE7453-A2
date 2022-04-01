@@ -118,22 +118,28 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="ResizeY" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\images\ResizeY.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="CurveX" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\images\CurveX.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="ResizeX2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\images\ResizeX2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ResizeX" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\images\ResizeX.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CurveY" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\images\CurveY.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ResizeX" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\images\ResizeX.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ResizeX2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\images\ResizeX2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ResizeY2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\images\ResizeY2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CurveX" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\images\CurveX.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ResizeY" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\images\ResizeY.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Hand" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\images\Hand.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Hand2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\images\Hand2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

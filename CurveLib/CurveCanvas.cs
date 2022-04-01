@@ -96,42 +96,32 @@ namespace CurveLib
         }
 
         #region CalcCurveByType
-        private CurveCanvasPoint CalcPointByType(string xType, string yType, double u)
+        public double CalcValueByType(string type, double u)
         {
             double x;
-            if(xType == "x(u)")
+            if (type == "x(u)")
             {
                 x = CalcX(u);
             }
-            else if(xType == "y(u)")
+            else if (type == "y(u)")
             {
                 x = CalcY(u);
             }
-            else if(xType == "u")
+            else if (type == "u")
             {
                 x = u;
             }
             else
             {
-                throw new ArgumentException($"Unsupported xType: {xType}");
+                throw new ArgumentException($"Unsupported type: {type}");
             }
-            double y;
-            if (yType == "x(u)")
-            {
-                y = CalcX(u);
-            }
-            else if (yType == "y(u)")
-            {
-                y = CalcY(u);
-            }
-            else if (yType == "u")
-            {
-                y = u;
-            }
-            else
-            {
-                throw new ArgumentException($"Unsupported yType: {yType}");
-            }
+            return x;
+        }
+
+        private CurveCanvasPoint CalcPointByType(string xType, string yType, double u)
+        {
+            double x = CalcValueByType(xType, u);
+            double y = CalcValueByType(yType, u);
             return new CurveCanvasPoint(0, x, y);
         }
 

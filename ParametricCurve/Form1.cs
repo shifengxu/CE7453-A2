@@ -22,9 +22,19 @@ namespace ParametricCurve
         private int _scaleXMouseDownValue = 0;
         private int _scaleYMouseDownValue = 0;
 
+        private bool _selectPointFlag = false;
+
+        private string _expressionX = "";  // expression of X-axis
+        private string _expressionY = "";
+        private string[] _expressionList = new string[] { "x(u)", "y(u)", "u" };
+
+        private readonly Brush _brush4SamplePoint = new SolidBrush(Color.Green);
+
         private Graphics _g;
         private readonly CurveCanvas _cc;
         private List<CurveCanvasPoint>? _curvePoints;
+        private List<double> _sampledU = new List<double>();
+        private List<double> _sampledFu = new List<double>();
 
         private readonly Timer panel1ResizeTimer = new Timer();
 
@@ -43,10 +53,12 @@ namespace ParametricCurve
             comboBoxX.Items.Add("y(u)");
             comboBoxX.Items.Add("u");
             comboBoxX.SelectedIndex = 0;
+            _expressionX = "x(u)";
             comboBoxY.Items.Add("x(u)");
             comboBoxY.Items.Add("y(u)");
             comboBoxY.Items.Add("u");
             comboBoxY.SelectedIndex = 1;
+            _expressionY = "y(u)";
 
             // Dynamic evaluation by string expression, for X and Y coordinate.
             // But it is too slow. So we have to abandon it here.
@@ -123,6 +135,8 @@ namespace ParametricCurve
             Application.Exit();
         }
 
+        // ******************************************************************** panel1
+        #region panel1
         private void panel1_MouseMove(object sender, MouseEventArgs e)
         {
             double x2 = _cc.CanvasX2RealX(e.X);
@@ -131,32 +145,15 @@ namespace ParametricCurve
             string y2Str = y2.ToString("N", CultureInfo.InvariantCulture);
             this.toolStripStatusLabel1.Text = $"{x2Str} {y2Str}";
 
-            bool needRedraw = false;
-            double changeX = 1;
-            double changeY = 1;
-            if (_scaleXFlag && _scaleXMouseDownValue != 0)
+            if (_selectPointFlag)
             {
-                var newX = e.X;
-                changeX = (double)newX / _scaleXMouseDownValue;
-                textBoxXScale.Text = $"{_cc.TargetRatioX*changeX,5:N2}".Replace(".00", "");
-                needRedraw = true;
+                textBoxU.Text = $"{x2,5:N3}";
+                textBoxU_TextChanged(sender, e);
             }
-            if (_scaleYFlag && _scaleYMouseDownValue != 0)
-            {
-                var newY = panel1.Height - e.Y;
-                var oldY = panel1.Height - _scaleYMouseDownValue;
-                changeY = (double)newY / oldY;
-                textBoxYScale.Text = $"{_cc.TargetRatioY*changeY,5:N2}".Replace(".00", "");
-                needRedraw = true;
-            }
-            if (needRedraw)
-            {
-                _g.Clear(Color.White);
-                drawCoordinateLines(_cc.TargetRatioX * changeX, _cc.TargetRatioY * changeY);
-            }
+
+            ScaleWhenMouseMove(e.X, e.Y);
         }
 
-        // ******************************************************************** panel1 resize
         private void panel1_Resize(object sender, EventArgs e)
         {
             if (_g == null) // when init form, it may call this before init _g.
@@ -186,6 +183,50 @@ namespace ParametricCurve
             panel1ResizeTimer.Start();
         }
 
+        private void panel1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (_scaleXFlag)
+            {
+                _scaleXMouseDownValue = e.X;
+            }
+            if (_scaleYFlag)
+            {
+                _scaleYMouseDownValue = e.Y;
+            }
+        }
+
+        private void panel1_MouseUp(object sender, MouseEventArgs e)
+        {
+            bool needRedraw = false;
+            if (_scaleXFlag && _scaleXMouseDownValue != 0)
+            {
+                var newX = e.X;
+                double change = (double)newX / _scaleXMouseDownValue;
+                _cc.TargetRatioX *= change;
+                _scaleXMouseDownValue = 0;
+                needRedraw = true;
+            }
+            if (_scaleYFlag && _scaleYMouseDownValue != 0)
+            {
+                var newY = panel1.Height - e.Y;
+                var oldY = panel1.Height - _scaleYMouseDownValue;
+                double change = (double)newY / oldY;
+                _cc.TargetRatioY *= change;
+                _scaleYMouseDownValue = 0;
+                needRedraw = true;
+            }
+            if (needRedraw)
+                DrawCurve();
+        }
+
+        private void panel1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (_selectPointFlag)
+            {
+                buttonAddPoint_Click(sender, e);
+            }
+        }
+
         private void panel1ResizeTimerTick(object? sender, EventArgs e)
         {
             // after resize, re-render the graph
@@ -194,21 +235,20 @@ namespace ParametricCurve
             panel1ResizeTimer.Enabled = false;
             panel1ResizeTimer.Stop();
         }
+        #endregion
 
+        #region select X Y expression and draw curve
         private void buttonPlotCurve_Click(object sender, EventArgs e)
         {
-            var xIdx = comboBoxX.SelectedIndex;
-            var yIdx = comboBoxY.SelectedIndex;
-            string[] typeList = new string[] { "x(u)", "y(u)", "u" };
-            var xType = typeList[xIdx];
-            var yType = typeList[yIdx];
-            _curvePoints = _cc.CalcCurveByType(xType, yType, 1000);
+            ResetPanel1Buttons();
+            _curvePoints = _cc.CalcCurveByType(_expressionX, _expressionY, 1000);
             UpdateCanvasAndDrawCurve();
         }
 
         private void comboBoxX_SelectedIndexChanged(object sender, EventArgs e)
         {
             var idx = comboBoxX.SelectedIndex;
+            _expressionX = _expressionList[idx];
             if(idx == 0)
             {
                 panelExprX.Visible = true;
@@ -228,6 +268,7 @@ namespace ParametricCurve
         private void comboBoxY_SelectedIndexChanged(object sender, EventArgs e)
         {
             var idx = comboBoxY.SelectedIndex;
+            _expressionY = _expressionList[idx];
             if (idx == 0)
             {
                 panelExprY.Visible = true;
@@ -243,7 +284,9 @@ namespace ParametricCurve
                 panelExprY.Visible = false;
             }
         }
+        #endregion
 
+        #region panel1 buttons
         private void buttonXScale_Click(object sender, EventArgs e)
         {
             if (_scaleXFlag == false)
@@ -274,40 +317,107 @@ namespace ParametricCurve
             UpdatePanel1Cursor();
         }
 
-        private void panel1_MouseDown(object sender, MouseEventArgs e)
+        private void buttonSelectPoint_Click(object sender, EventArgs e)
         {
-            if (_scaleXFlag)
+            if (_selectPointFlag == true)
             {
-                _scaleXMouseDownValue = e.X;
+                _selectPointFlag = false;
+                buttonSelectPoint.BackgroundImage = Properties.Resources.Hand;
+                panel1.Cursor = Cursors.Cross;
             }
-            if (_scaleYFlag)
+            else
             {
-                _scaleYMouseDownValue = e.Y;
+                _selectPointFlag = true;
+                buttonSelectPoint.BackgroundImage = Properties.Resources.Hand2;
+                panel1.Cursor = Cursors.Hand;
             }
         }
 
-        private void panel1_MouseUp(object sender, MouseEventArgs e)
+        private void ResetPanel1Buttons()
         {
-            bool needRedraw = false;
-            if(_scaleXFlag && _scaleXMouseDownValue != 0)
+            _selectPointFlag = false;
+            buttonSelectPoint.BackgroundImage = Properties.Resources.Hand;
+            panel1.Cursor = Cursors.Cross;
+
+            buttonXScale.BackgroundImage = Properties.Resources.ResizeX;
+            buttonYScale.BackgroundImage = Properties.Resources.ResizeY;
+            _scaleXFlag = false;
+            _scaleYFlag = false;
+            _scaleXMouseDownValue = 0;
+            _scaleYMouseDownValue = 0;
+
+            UpdatePanel1Cursor();
+        }
+
+        private void UpdatePanel1Cursor()
+        {
+            if (_scaleXFlag == false && _scaleYFlag == false)
             {
-                var newX = e.X;
-                double change = (double)newX / _scaleXMouseDownValue;
-                _cc.TargetRatioX *= change;
-                _scaleXMouseDownValue = 0;
-                needRedraw = true;
+                panel1.Cursor = Cursors.Cross;
             }
-            if(_scaleYFlag && _scaleYMouseDownValue != 0)
+            else if (_scaleXFlag == true && _scaleYFlag == false)
             {
-                var newY = panel1.Height - e.Y;
-                var oldY = panel1.Height - _scaleYMouseDownValue;
-                double change = (double)newY / oldY;
-                _cc.TargetRatioY *= change;
-                _scaleYMouseDownValue = 0;
-                needRedraw = true;
+                panel1.Cursor = Cursors.SizeWE;
             }
-            if (needRedraw)
-                DrawCurve();
+            else if (_scaleXFlag == false && _scaleYFlag == true)
+            {
+                panel1.Cursor = Cursors.SizeNS;
+            }
+            else
+            {
+                panel1.Cursor = Cursors.SizeAll;
+            }
+        }
+        #endregion
+
+        private void textBoxU_TextChanged(object sender, EventArgs e)
+        {
+            double x;
+            if (double.TryParse(textBoxU.Text, out x))
+            {
+                double fu = _cc.CalcValueByType(_expressionY, x);
+                textBoxFu.Text = $"{fu,5:N3}";
+            }
+            else
+            {
+                toolStripStatusLabel1.Text = $"Can not parse '{textBoxU.Text}' as double for u value.";
+            }
+        }
+
+        private void buttonAddPoint_Click(object sender, EventArgs e)
+        {
+            string strU = textBoxU.Text;
+            string strFu = textBoxFu.Text;
+            double u, fu;
+            if (!double.TryParse(strU, out u))
+            {
+                MessageBox.Show($"Invalid u value: {strU}");
+                return;
+            }
+            if (!double.TryParse(strFu, out fu))
+            {
+                MessageBox.Show($"Invalid f(u) value: {strFu}");
+                return;
+            }
+            _sampledU.Add(u);
+            _sampledFu.Add(fu);
+            DrawSamplePoint(u, fu);
+            listBoxPoints.Items.Add($"{strU}:  {strFu}");
+        }
+
+        private void listBoxPoints_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            int sel = listBoxPoints.SelectedIndex;
+            listBoxPoints.Items.RemoveAt(sel);
+            _sampledU.RemoveAt(sel);
+            _sampledFu.RemoveAt(sel);
+
+            _g.Clear(Color.White);
+            DrawCurve();
+            for(int i = 0; i < _sampledU.Count; i++)
+            {
+                DrawSamplePoint(_sampledU[i], _sampledFu[i]);
+            }
         }
     }
 }
