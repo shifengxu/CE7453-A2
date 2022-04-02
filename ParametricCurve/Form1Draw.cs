@@ -9,7 +9,7 @@ namespace ParametricCurve
     public partial class Form1
     {
         // ******************************************************************** drawCoordinateLines()
-        private void drawCoordinateLines(double? targetRatioX = null, double? targetRatioY = null)
+        private void DrawCoordinateLines(double? targetRatioX = null, double? targetRatioY = null)
         {
             int pWidth = panel1.Width;
             int pHeight = panel1.Height;
@@ -64,33 +64,29 @@ namespace ParametricCurve
                 valueY--;
                 panelY = _cc.RealY2CanvasY(valueY, targetRatioY);
             }
+            textBoxXScale.Text = $"{_cc.TargetRatioX,5:N2}".Replace(".00", "");
+            textBoxYScale.Text = $"{_cc.TargetRatioY,5:N2}".Replace(".00", "");
         }
 
         // ******************************************************************** drawCurve()
-        private void UpdateCanvasAndDrawCurve()
-        {
-            if (_curvePoints == null || _curvePoints.Count == 0)
-                return;
+        //private void UpdateCanvasAndDrawCurve()
+        //{
+        //    if (_curvePoints != null && _curvePoints.Count > 0)
+        //    {
+        //        _cc.UpdateCanvasSizeAndRatio(panel1.Width, panel1.Height);
+        //    }
 
-            int pWidth = panel1.Width;
-            int pHeight = panel1.Height;
-            _cc.UpdateCanvasSizeAndRatio(pWidth, pHeight);
-
-            DrawCurve();
-        }
+        //    DrawAll();
+        //}
 
         private void DrawCurve()
         {
             if (_curvePoints == null || _curvePoints.Count == 0)
                 return;
 
-            // clear old graph
-            _g.Clear(Color.White);
-
-            drawCoordinateLines();
-
             // draw curve by points
-            Pen pen4Curve = new Pen(Color.Red, 2);
+            int penIdx = _panel1CurveCount % _pen4CurveArr.Length;
+            Pen pen4Curve = _pen4CurveArr[penIdx];
             int pht = _cc.CanvasHeight;
             int prevCanvasX = _cc.RealX2CanvasX(_curvePoints[0].X);
             int prevCanvasY = _cc.RealY2CanvasY(_curvePoints[0].Y);
@@ -105,9 +101,17 @@ namespace ParametricCurve
                 prevCanvasX = currCanvasX;
                 prevCanvasY = currCanvasY;
             }
+        }
 
-            textBoxXScale.Text = $"{_cc.TargetRatioX,5:N2}".Replace(".00", "");
-            textBoxYScale.Text = $"{_cc.TargetRatioY,5:N2}".Replace(".00", "");
+        private void DrawSamplePoints()
+        {
+            if (_sampledU == null)
+                return;
+
+            for (int i = 0; i < _sampledU.Count; i++)
+            {
+                DrawSamplePoint(_sampledU[i], _sampledFu[i]);
+            }
         }
 
         private void DrawSamplePoint(double u, double fu)
@@ -116,6 +120,59 @@ namespace ParametricCurve
             int panelY = _cc.CanvasHeight - _cc.RealY2CanvasY(fu);
             _g.FillEllipse(_brush4SamplePoint, panelX - 3, panelY - 3, 6, 6);
             _g.DrawString($"({u,5:N3},{fu,5:N3})", panel1.Font, _brush4SamplePoint, panelX, panelY);
+        }
+
+        private void DrawCubicPolynomial()
+        {
+            if (_sampledCubic == null || _sampledCubic.Length < 4)
+                return;
+
+            double c0 = _sampledCubic[0];
+            double c1 = _sampledCubic[1];
+            double c2 = _sampledCubic[2];
+            double c3 = _sampledCubic[3];
+            double min = _sampledU[0];
+            double max = _sampledU[0];
+            for (int i = 1; i < _sampledU.Count; i++)
+            {
+                min = Math.Min(min, _sampledU[i]);
+                max = Math.Max(max, _sampledU[i]);
+            }
+            if (min > 0)
+                min = 0;
+            if (max < 1)
+                max = 1;
+            double len = max - min;
+            min -= len / 10;
+            max += len / 10;
+            len = max - min;
+            // draw curve by points
+            Pen pen4Curve = new Pen(Color.Green, 2);
+            int pht = _cc.CanvasHeight;
+            double u = min;
+            int prevCanvasX = _cc.RealX2CanvasX(u);
+            int prevCanvasY = _cc.RealY2CanvasY(c0 + c1 * u + c2 * u * u + c3 * u * u * u);
+            for (int i = 1; i <= _panel1SegCount; i++)
+            {
+                u = min + len * i / _panel1SegCount;
+                var x = _cc.RealX2CanvasX(u);
+                var y = _cc.RealY2CanvasY(c0 + c1*u + c2*u*u + c3*u*u*u);
+                _g.DrawLine(pen4Curve, prevCanvasX, pht - prevCanvasY, x, pht - y);
+                prevCanvasX = x;
+                prevCanvasY = y;
+            }
+
+        }
+
+        private void DrawAll()
+        {
+            // clear old graph
+            _g.Clear(Color.White);
+
+            DrawCoordinateLines();
+            DrawCurve();
+            DrawSamplePoints();
+            DrawCubicPolynomial();
         }
 
         private void ScaleWhenMouseMove(int X, int Y)
@@ -141,8 +198,30 @@ namespace ParametricCurve
             if (needRedraw)
             {
                 _g.Clear(Color.White);
-                drawCoordinateLines(_cc.TargetRatioX * changeX, _cc.TargetRatioY * changeY);
+                DrawCoordinateLines(_cc.TargetRatioX * changeX, _cc.TargetRatioY * changeY);
             }
+        }
+
+        private int AddExpression(string expr)
+        {
+            int s = 0;
+            s += AddExpression2ComboBox(expr, comboBoxX);
+            s += AddExpression2ComboBox(expr, comboBoxY);
+            return s;
+        }
+
+        /**
+         * Add "cubicX(u)" or "cubicY(u)" into combobox.
+         */
+        private int AddExpression2ComboBox(string expr, ComboBox cb)
+        {
+            foreach (var item in cb.Items)
+            {
+                if (item.ToString() == expr)
+                    return 0;
+            }
+            cb.Items.Add(expr);
+            return 1;
         }
     }
 }

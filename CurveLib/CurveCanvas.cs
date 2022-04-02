@@ -14,26 +14,12 @@ namespace CurveLib
         private readonly List<CurveCanvasPoint> points = new List<CurveCanvasPoint>();
 
         // X * TargetRatioX = canvasX; Y * TargetRatioY = canvasY
-        public double TargetRatioX { get; set; } = 1;
-        public double TargetRatioY { get; set; } = 1;
+        public double TargetRatioX { get; set; } = 100;
+        public double TargetRatioY { get; set; } = 100;
 
-        private int _canvasMarginX = 0;
-        public int CanvasMarginX { get => _canvasMarginX; }
+        public int CanvasMarginX { get; set; }
 
-        private int _canvasMarginY = 0;
-        public int CanvasMarginY { get => _canvasMarginY; }
-
-        private double _minX = 0;
-        public double MinX { get => _minX; }
-
-        private double _maxX = 0;
-        public double MaxX { get => _maxX; }
-
-        private double _minY = 0;
-        public double MinY { get => _minY; }
-
-        private double _maxY = 0;
-        public double MaxY { get => _maxY; }
+        public int CanvasMarginY { get; set; }
 
         private int _canvasWidth = 0;
         public int CanvasWidth { get => _canvasWidth; }
@@ -41,10 +27,15 @@ namespace CurveLib
         private int _canvasHeight = 0;
         public int CanvasHeight { get => _canvasHeight; }
 
+        public double[]? ExpressionCubicX = null;
+        public double[]? ExpressionCubicY = null;
+
         public CurveCanvas(int canvasWidth, int canvasHeight)
         {
             this._canvasWidth = canvasWidth;
             this._canvasHeight = canvasHeight;
+            CanvasMarginX = canvasWidth / 2;
+            CanvasMarginY = canvasHeight / 2;
         }
 
         private double CalcX(double u)
@@ -77,18 +68,12 @@ namespace CurveLib
             points.Clear();
             var p0 = CalcPoint(0);
             p0.index = 0;
-            _minX = _maxX = p0.X;
-            _minY = _maxY = p0.Y;
             points.Add(p0);
 
             for(int i = 1; i <= segmentCount; i++)
             {
                 var p = CalcPoint((double)i / segmentCount);
                 p.index = i;
-                _minX = Math.Min(p.X, _minX);
-                _minY = Math.Min(p.Y, _minY);
-                _maxX = Math.Max(p.X, _maxX);
-                _maxY = Math.Max(p.Y, _maxY);
                 points.Add(p);
             }
             //UpdateCanvasSize(CanvasWidth, CanvasHeight);
@@ -98,7 +83,7 @@ namespace CurveLib
         #region CalcCurveByType
         public double CalcValueByType(string type, double u)
         {
-            double x;
+            double x = 0;
             if (type == "x(u)")
             {
                 x = CalcX(u);
@@ -110,6 +95,12 @@ namespace CurveLib
             else if (type == "u")
             {
                 x = u;
+            }
+            else if (type == "cubicX(u)" || type == "cubicY(u)")
+            {
+                double[]? c = type == "cubicX(u)" ? ExpressionCubicX : ExpressionCubicY;
+                if (c != null)
+                    x = c[0] + c[1] * u + c[2] * u * u + c[3] * u * u * u;
             }
             else
             {
@@ -130,21 +121,14 @@ namespace CurveLib
             points.Clear();
             var p0 = CalcPointByType(xType, yType, 0);
             p0.index = 0;
-            _minX = _maxX = p0.X;
-            _minY = _maxY = p0.Y;
             points.Add(p0);
 
             for (int i = 1; i <= segmentCount; i++)
             {
                 var p = CalcPointByType(xType, yType, (double)i / segmentCount);
                 p.index = i;
-                _minX = Math.Min(p.X, _minX);
-                _minY = Math.Min(p.Y, _minY);
-                _maxX = Math.Max(p.X, _maxX);
-                _maxY = Math.Max(p.Y, _maxY);
                 points.Add(p);
             }
-            //UpdateCanvasSize(CanvasWidth, CanvasHeight);
             return points;
         }
         #endregion
@@ -184,29 +168,40 @@ namespace CurveLib
         //}
         #endregion
 
-        public void UpdateCanvasSizeAndRatio(int width, int height)
+        public void UpdateSizeMarginRatioMinMax(int width, int height)
         {
             _canvasWidth = width;
             _canvasHeight = height;
-            _canvasMarginX = width / 10;
-            _canvasMarginY = height / 10;
+            double minX = 0, minY = 0, maxX = 0, maxY = 0;
 
-            double delta_x = _maxX - _minX;
-            double delta_y = _maxY - _minY;
+            if (points != null && points.Count > 0)
+            {
+                var p0 = points[0];
+                minX = maxX = p0.X;
+                minY = maxY = p0.Y;
+                for (int i = 1; i < points.Count; i++)
+                {
+                    var p = points[i];
+                    minX = Math.Min(p.X, minX);
+                    minY = Math.Min(p.Y, minY);
+                    maxX = Math.Max(p.X, maxX);
+                    maxY = Math.Max(p.Y, maxY);
+                }
+            }
+
+            double delta_x = maxX - minX;
+            double delta_y = maxY - minY;
             // as delta_x or delta_y could be 0, so not divide by them.
-            double ratio_x = (double)delta_x / (width - 2 * _canvasMarginX);
-            double ratio_y = (double)delta_y / (height - 2 * _canvasMarginY);
-            double ratio = Math.Max(ratio_x, ratio_y);
-            if (ratio == 0)
-                return;
-            else
-                TargetRatioX = TargetRatioY = 1.0 / ratio;
-
-            //foreach (var p in points)
-            //{
-            //    p.canvasX = RealX2CanvasX(p.X);
-            //    p.canvasY = RealY2CanvasY(p.Y);
-            //}
+            double ratio_x = (double)delta_x / (width * 0.8);
+            double ratio_y = (double)delta_y / (height * 0.8);
+            double ratioMax = Math.Max(ratio_x, ratio_y);
+            if (ratioMax > 0)
+            {
+                TargetRatioX = ratio_x == 0 ? 1.0 / ratioMax : 1.0 / ratio_x;
+                TargetRatioY = ratio_y == 0 ? 1.0 / ratioMax : 1.0 / ratio_y;
+            }
+            CanvasMarginX = (int)(-minX * TargetRatioX + 0.1 * _canvasWidth);
+            CanvasMarginY = (int)(-minY * TargetRatioY + 0.1 * _canvasHeight);
         }
 
         public int RealX2CanvasX(double x, double? targetRatioX = null)
@@ -214,7 +209,7 @@ namespace CurveLib
             if (targetRatioX == null)
                 targetRatioX = TargetRatioX;
 
-            return (int)((x - _minX) * targetRatioX) + _canvasMarginX;
+            return (int)(x * targetRatioX) + CanvasMarginX;
         }
 
         public int RealY2CanvasY(double y, double? targetRatioY = null)
@@ -222,7 +217,7 @@ namespace CurveLib
             if (targetRatioY == null)
                 targetRatioY = TargetRatioY;
 
-            return (int)((y - _minY) * targetRatioY) + _canvasMarginY;
+            return (int)(y * targetRatioY) + CanvasMarginY;
         }
 
         public double CanvasX2RealX(int x, double? targetRatioX = null)
@@ -230,7 +225,7 @@ namespace CurveLib
             if (targetRatioX == null)
                 targetRatioX = TargetRatioX;
 
-            return (double)(x - _canvasMarginX) / targetRatioX.Value + _minX;
+            return (double)(x - CanvasMarginX) / targetRatioX.Value;
         }
 
         public double CanvasY2RealY(int y, double? targetRatioY = null)
@@ -238,7 +233,7 @@ namespace CurveLib
             if (targetRatioY == null)
                 targetRatioY = TargetRatioY;
 
-            return (double)(y - _canvasMarginY) / targetRatioY.Value + _minY;
+            return (double)(y - CanvasMarginY) / targetRatioY.Value;
         }
 
     }
