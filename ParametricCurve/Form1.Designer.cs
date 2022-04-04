@@ -62,6 +62,10 @@
             this.labelCubic = new System.Windows.Forms.Label();
             this.textBoxExprCubicX = new System.Windows.Forms.TextBox();
             this.textBoxExprCubicY = new System.Windows.Forms.TextBox();
+            this.listBoxBsPoints = new System.Windows.Forms.ListBox();
+            this.buttonSelectBs = new System.Windows.Forms.Button();
+            this.buttonSaveBs = new System.Windows.Forms.Button();
+            this.buttonDrawBs = new System.Windows.Forms.Button();
             this.buttonPlotCurve = new System.Windows.Forms.Button();
             this.comboBoxX = new System.Windows.Forms.ComboBox();
             this.comboBoxY = new System.Windows.Forms.ComboBox();
@@ -74,6 +78,8 @@
             this.labelU = new System.Windows.Forms.Label();
             this.buttonClearGraph = new System.Windows.Forms.Button();
             this.groupBoxExpr = new System.Windows.Forms.GroupBox();
+            this.groupBoxBspline = new System.Windows.Forms.GroupBox();
+            this.buttonDeleteBsPoint = new System.Windows.Forms.Button();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -82,6 +88,7 @@
             this.panelExprY.SuspendLayout();
             this.groupBoxPoints.SuspendLayout();
             this.groupBoxExpr.SuspendLayout();
+            this.groupBoxBspline.SuspendLayout();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -331,7 +338,7 @@
             this.listBoxPoints.ItemHeight = 20;
             this.listBoxPoints.Location = new System.Drawing.Point(287, 26);
             this.listBoxPoints.Name = "listBoxPoints";
-            this.listBoxPoints.Size = new System.Drawing.Size(124, 184);
+            this.listBoxPoints.Size = new System.Drawing.Size(125, 184);
             this.listBoxPoints.TabIndex = 4;
             this.toolTip1.SetToolTip(this.listBoxPoints, "Double click to delete");
             this.listBoxPoints.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listBoxPoints_MouseDoubleClick);
@@ -414,10 +421,58 @@
             this.textBoxExprCubicY.TabIndex = 16;
             this.toolTip1.SetToolTip(this.textBoxExprCubicY, "c0 + c1*u + c2*u^2, c3*u^3");
             // 
+            // listBoxBsPoints
+            // 
+            this.listBoxBsPoints.FormattingEnabled = true;
+            this.listBoxBsPoints.ItemHeight = 20;
+            this.listBoxBsPoints.Location = new System.Drawing.Point(288, 24);
+            this.listBoxBsPoints.Name = "listBoxBsPoints";
+            this.listBoxBsPoints.Size = new System.Drawing.Size(125, 184);
+            this.listBoxBsPoints.TabIndex = 18;
+            this.toolTip1.SetToolTip(this.listBoxBsPoints, "Double click to delete");
+            this.listBoxBsPoints.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listBoxBsPoints_MouseDoubleClick);
+            // 
+            // buttonSelectBs
+            // 
+            this.buttonSelectBs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonSelectBs.BackgroundImage = global::ParametricCurve.Properties.Resources.Pointer;
+            this.buttonSelectBs.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.buttonSelectBs.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.buttonSelectBs.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.buttonSelectBs.Location = new System.Drawing.Point(22, 26);
+            this.buttonSelectBs.Name = "buttonSelectBs";
+            this.buttonSelectBs.Size = new System.Drawing.Size(88, 30);
+            this.buttonSelectBs.TabIndex = 23;
+            this.buttonSelectBs.Text = "Select";
+            this.buttonSelectBs.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.buttonSelectBs.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            this.toolTip1.SetToolTip(this.buttonSelectBs, "Select target points for B-Spline");
+            this.buttonSelectBs.UseVisualStyleBackColor = true;
+            this.buttonSelectBs.Click += new System.EventHandler(this.buttonSelectBs_Click);
+            // 
+            // buttonSaveBs
+            // 
+            this.buttonSaveBs.Location = new System.Drawing.Point(171, 146);
+            this.buttonSaveBs.Name = "buttonSaveBs";
+            this.buttonSaveBs.Size = new System.Drawing.Size(107, 28);
+            this.buttonSaveBs.TabIndex = 22;
+            this.buttonSaveBs.Text = "Save BSpline";
+            this.buttonSaveBs.UseVisualStyleBackColor = true;
+            // 
+            // buttonDrawBs
+            // 
+            this.buttonDrawBs.Location = new System.Drawing.Point(171, 69);
+            this.buttonDrawBs.Name = "buttonDrawBs";
+            this.buttonDrawBs.Size = new System.Drawing.Size(106, 28);
+            this.buttonDrawBs.TabIndex = 20;
+            this.buttonDrawBs.Text = "Draw BSpline";
+            this.buttonDrawBs.UseVisualStyleBackColor = true;
+            this.buttonDrawBs.Click += new System.EventHandler(this.buttonDrawBs_Click);
+            // 
             // buttonPlotCurve
             // 
             this.buttonPlotCurve.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonPlotCurve.Location = new System.Drawing.Point(152, 122);
+            this.buttonPlotCurve.Location = new System.Drawing.Point(152, 113);
             this.buttonPlotCurve.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.buttonPlotCurve.Name = "buttonPlotCurve";
             this.buttonPlotCurve.Size = new System.Drawing.Size(121, 41);
@@ -486,9 +541,9 @@
             this.groupBoxPoints.Controls.Add(this.labelFu);
             this.groupBoxPoints.Controls.Add(this.textBoxU);
             this.groupBoxPoints.Controls.Add(this.labelU);
-            this.groupBoxPoints.Location = new System.Drawing.Point(836, 234);
+            this.groupBoxPoints.Location = new System.Drawing.Point(836, 206);
             this.groupBoxPoints.Name = "groupBoxPoints";
-            this.groupBoxPoints.Size = new System.Drawing.Size(423, 231);
+            this.groupBoxPoints.Size = new System.Drawing.Size(423, 226);
             this.groupBoxPoints.TabIndex = 12;
             this.groupBoxPoints.TabStop = false;
             this.groupBoxPoints.Text = "Sampled Points";
@@ -534,7 +589,7 @@
             // buttonClearGraph
             // 
             this.buttonClearGraph.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonClearGraph.Location = new System.Drawing.Point(294, 122);
+            this.buttonClearGraph.Location = new System.Drawing.Point(294, 113);
             this.buttonClearGraph.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.buttonClearGraph.Name = "buttonClearGraph";
             this.buttonClearGraph.Size = new System.Drawing.Size(121, 41);
@@ -556,10 +611,35 @@
             this.groupBoxExpr.Controls.Add(this.labelY);
             this.groupBoxExpr.Location = new System.Drawing.Point(836, 29);
             this.groupBoxExpr.Name = "groupBoxExpr";
-            this.groupBoxExpr.Size = new System.Drawing.Size(423, 180);
+            this.groupBoxExpr.Size = new System.Drawing.Size(423, 166);
             this.groupBoxExpr.TabIndex = 14;
             this.groupBoxExpr.TabStop = false;
             this.groupBoxExpr.Text = "Expression";
+            // 
+            // groupBoxBspline
+            // 
+            this.groupBoxBspline.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxBspline.Controls.Add(this.buttonSelectBs);
+            this.groupBoxBspline.Controls.Add(this.buttonSaveBs);
+            this.groupBoxBspline.Controls.Add(this.buttonDeleteBsPoint);
+            this.groupBoxBspline.Controls.Add(this.buttonDrawBs);
+            this.groupBoxBspline.Controls.Add(this.listBoxBsPoints);
+            this.groupBoxBspline.Location = new System.Drawing.Point(840, 438);
+            this.groupBoxBspline.Name = "groupBoxBspline";
+            this.groupBoxBspline.Size = new System.Drawing.Size(419, 217);
+            this.groupBoxBspline.TabIndex = 15;
+            this.groupBoxBspline.TabStop = false;
+            this.groupBoxBspline.Text = "B-Spline";
+            // 
+            // buttonDeleteBsPoint
+            // 
+            this.buttonDeleteBsPoint.Location = new System.Drawing.Point(171, 24);
+            this.buttonDeleteBsPoint.Name = "buttonDeleteBsPoint";
+            this.buttonDeleteBsPoint.Size = new System.Drawing.Size(107, 28);
+            this.buttonDeleteBsPoint.TabIndex = 21;
+            this.buttonDeleteBsPoint.Text = "Delete Point";
+            this.buttonDeleteBsPoint.UseVisualStyleBackColor = true;
+            this.buttonDeleteBsPoint.Click += new System.EventHandler(this.buttonDeleteBsPoint_Click);
             // 
             // Form1
             // 
@@ -567,6 +647,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
             this.ClientSize = new System.Drawing.Size(1271, 720);
+            this.Controls.Add(this.groupBoxBspline);
             this.Controls.Add(this.groupBoxExpr);
             this.Controls.Add(this.groupBoxPoints);
             this.Controls.Add(this.panel1);
@@ -592,6 +673,7 @@
             this.groupBoxPoints.PerformLayout();
             this.groupBoxExpr.ResumeLayout(false);
             this.groupBoxExpr.PerformLayout();
+            this.groupBoxBspline.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -643,5 +725,11 @@
         private TextBox textBoxExprCubicY;
         private ToolStripMenuItem saveCubicPolynomialsToolStripMenuItem;
         private ToolStripMenuItem loadCubicPolynomialsToolStripMenuItem;
+        private GroupBox groupBoxBspline;
+        private Button buttonSaveBs;
+        private Button buttonDeleteBsPoint;
+        private Button buttonDrawBs;
+        private ListBox listBoxBsPoints;
+        private Button buttonSelectBs;
     }
 }

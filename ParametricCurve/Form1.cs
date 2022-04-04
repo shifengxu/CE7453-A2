@@ -32,7 +32,11 @@ namespace ParametricCurve
         private string _expressionX = "";  // expression of X-axis
         private string _expressionY = "";
 
-        private readonly Brush _brush4SamplePoint = new SolidBrush(Color.Green);
+        // B-Spline
+        private bool _bsplineSelectFlag = false;
+        private List<(double, double)> _bsplineTargetPoints = new List<(double, double)> ();
+
+        private readonly SolidBrush _brush4SamplePoint = new SolidBrush(Color.Green);
         private readonly Pen[] _pen4CurveArr = new Pen[]
         {
             new Pen(Color.Red, 2), new Pen(Color.Blue, 2), new Pen(Color.Green, 2),
@@ -43,8 +47,7 @@ namespace ParametricCurve
 
         // about sample points
         private List<CurveCanvasPoint>? _curvePoints;
-        private List<double> _sampledU = new List<double>();
-        private List<double> _sampledFu = new List<double>();
+        private List<(double, double)> _sampledPoints = new List<(double, double)>();
         private double[]? _sampledCubic = null;
 
         private readonly Timer panel1ResizeTimer = new Timer();
@@ -129,6 +132,10 @@ namespace ParametricCurve
             panel1InitTimer.Interval = 1000;
             panel1InitTimer.Tick += new EventHandler(panel1InitTimerTick);
             panel1InitTimer.Enabled = true;
+
+            buttonSelectBs.ImageAlign = ContentAlignment.MiddleLeft;
+            buttonSelectBs.TextImageRelation = TextImageRelation.ImageBeforeText;
+            buttonSelectBs.TextAlign = ContentAlignment.MiddleRight;
         }
 
         private void Form1_FormClosing(Object sender, FormClosingEventArgs e)
@@ -268,7 +275,14 @@ namespace ParametricCurve
         {
             if (panel1.Cursor == Cursors.Cross)
             {
-                buttonAddPoint_Click(sender, e);
+                if (_bsplineSelectFlag)
+                {
+                    AddDrawBsplineTargetPoint(sender, e);
+                }
+                else
+                {
+                    buttonAddPoint_Click(sender, e);
+                }
             }
         }
 
@@ -294,8 +308,7 @@ namespace ParametricCurve
         private void buttonPlotCurve_Click(object sender, EventArgs e)
         {
             listBoxPoints.Items.Clear();
-            _sampledU.Clear();
-            _sampledFu.Clear();
+            _sampledPoints.Clear();
             _sampledCubic = null;
             textBoxCubicX.Text = String.Empty;
             textBoxSE.Text = String.Empty;
@@ -523,9 +536,24 @@ namespace ParametricCurve
                 MessageBox.Show($"Invalid f(u) value: {strFu}");
                 return;
             }
-            _sampledU.Add(u);
-            _sampledFu.Add(fu);
-            DrawSamplePoint(u, fu);
+            if (_curvePoints == null || _curvePoints.Count == 0)
+            {
+                MessageBox.Show("Please plot curve first.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+            if ((string)comboBoxX.SelectedItem != "u")
+            {
+                var msg = "The Horizontal axis expression is not \"u\". The point may not plot in the curve." +
+                    "\r\n\r\n Do you continue?";
+                var res = MessageBox.Show(msg, "Please confirm",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button2);
+                if (res == DialogResult.No)
+                    return;
+            }
+            _sampledPoints.Add((u, fu));
+            DrawPoint(u, fu);
             listBoxPoints.Items.Add($"{strU}:  {strFu}");
             _sampledCubic = null; // sample points changed, so cubic polynomial obsolete.
             textBoxCubicX.Text = String.Empty;
@@ -542,8 +570,7 @@ namespace ParametricCurve
             }
 
             listBoxPoints.Items.RemoveAt(sel);
-            _sampledU.RemoveAt(sel);
-            _sampledFu.RemoveAt(sel);
+            _sampledPoints.RemoveAt(sel);
             _sampledCubic = null; // sample points changed, so cubic polynomial obsolete.
             textBoxCubicX.Text = String.Empty;
             textBoxSE.Text = String.Empty;
@@ -558,14 +585,14 @@ namespace ParametricCurve
 
         private void buttonDrawCubic_Click(object sender, EventArgs e)
         {
-            if (_sampledU == null || _sampledU.Count < 4)
+            if (_sampledPoints == null || _sampledPoints.Count < 4)
             {
                 MessageBox.Show("We need 4 or more points for such operation.");
                 return;
             }
             var lsq = new LeastSquaresByLU();
             double rmse;
-            _sampledCubic = lsq.GetCubicPolynomial(_sampledU, _sampledFu, out rmse);
+            _sampledCubic = lsq.GetCubicPolynomial(_sampledPoints, out rmse);
             textBoxCubicX.Text = Utils.GenCubicExpr(_sampledCubic);
             textBoxSE.Text = Utils.RemoveTrailingZeros($"{rmse:N3}");
 
@@ -603,6 +630,8 @@ namespace ParametricCurve
         }
         #endregion
 
+        // ******************************************************************** menu
+        #region menu
         private void saveSamplePointsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (SaveFileDialog sfd = new SaveFileDialog())
@@ -618,10 +647,11 @@ namespace ParametricCurve
             string str1, str2;
             using (StreamWriter sw = new StreamWriter(this.saveSamplePointsPath))
             {
-                for (int i = 0; i < _sampledU.Count; i++)
+                for (int i = 0; i < _sampledPoints.Count; i++)
                 {
-                    str1 = $"{_sampledU[i],5:N3}";
-                    str2 = $"{_sampledFu[i],5:N3}";
+                    var t = _sampledPoints[i];
+                    str1 = $"{t.Item1,5:N3}";
+                    str2 = $"{t.Item2,5:N3}";
                     if (str1.EndsWith(".00")) str1 = str1.Replace(".00", "   ");
                     if (str2.EndsWith(".00")) str2 = str2.Replace(".00", "   ");
                     sw.WriteLine($"{str1}  {str2}");
@@ -696,6 +726,61 @@ namespace ParametricCurve
                     string[] strArr = str.Split(":")[1].Trim().Split();
                     _cc.ExpressionCubicY = Array.ConvertAll(strArr, Double.Parse);
                 }
+            }
+        }
+        #endregion
+
+        // ******************************************************************** B-Spline
+        private void buttonSelectBs_Click(object sender, EventArgs e)
+        {
+            if (_bsplineSelectFlag == false)
+            {
+                _bsplineSelectFlag = true;
+                buttonSelectBs.BackgroundImage = Properties.Resources.Pointer2;
+                buttonSelectBs.ForeColor = Color.FromArgb(128, 128, 255);
+                buttonSelectBs.Font = new Font(this.Font, FontStyle.Bold);
+            }
+            else
+            {
+                _bsplineSelectFlag = false;
+                buttonSelectBs.BackgroundImage = Properties.Resources.Pointer;
+                buttonSelectBs.ForeColor = Color.Black;
+                buttonSelectBs.Font = new Font(this.Font, FontStyle.Regular);
+            }
+        }
+
+        private void buttonDeleteBsPoint_Click(object sender, EventArgs e)
+        {
+            var sel = listBoxBsPoints.SelectedIndex;
+            if (sel == -1)
+            {
+                MessageBox.Show("Please select point from B-Spline point list.",
+                    "Information",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+                return;
+            }
+            listBoxBsPoints.Items.RemoveAt(sel);
+            _bsplineTargetPoints.RemoveAt(sel);
+
+            DrawAll();
+        }
+
+        private void listBoxBsPoints_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            buttonDeleteBsPoint_Click(sender, e);
+        }
+
+        private void buttonDrawBs_Click(object sender, EventArgs e)
+        {
+            int minCnt = 4;
+            if (_bsplineTargetPoints == null || _bsplineTargetPoints.Count < minCnt)
+            {
+                MessageBox.Show($"BSpline: you need to select {minCnt} target point at lease.",
+                    "Information",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+                return;
             }
         }
     }

@@ -103,23 +103,56 @@ namespace ParametricCurve
             }
         }
 
-        private void DrawSamplePoints()
+        private void DrawPoint(double x, double y, Brush? b = null)
         {
-            if (_sampledU == null)
+            if (b == null)
+                b = _brush4SamplePoint;
+
+            int panelX = _cc.RealX2CanvasX(x);
+            int panelY = _cc.CanvasHeight - _cc.RealY2CanvasY(y);
+            _g.FillEllipse(b, panelX - 3, panelY - 3, 6, 6);
+            _g.DrawString($"({x,5:N3},{y,5:N3})", panel1.Font, b, panelX, panelY);
+        }
+
+        private void DrawPoints(List<(double, double)> pList, SolidBrush? b = null)
+        {
+            if (pList == null || pList.Count == 0)
                 return;
 
-            for (int i = 0; i < _sampledU.Count; i++)
+            if (b == null)
+                b = _brush4SamplePoint;
+
+            for (int i = 0; i < pList.Count; i++)
             {
-                DrawSamplePoint(_sampledU[i], _sampledFu[i]);
+                DrawPoint(pList[i].Item1, pList[i].Item2, b);
             }
         }
 
-        private void DrawSamplePoint(double u, double fu)
+        private void DrawAndLinkPoints(List<(double, double)> pList, SolidBrush? b = null, Pen? p = null)
         {
-            int panelX = _cc.RealX2CanvasX(u);
-            int panelY = _cc.CanvasHeight - _cc.RealY2CanvasY(fu);
-            _g.FillEllipse(_brush4SamplePoint, panelX - 3, panelY - 3, 6, 6);
-            _g.DrawString($"({u,5:N3},{fu,5:N3})", panel1.Font, _brush4SamplePoint, panelX, panelY);
+            if (pList == null || pList.Count == 0)
+                return;
+
+            if (b == null)
+                b = _brush4SamplePoint;
+
+            if (p == null)
+                p = new Pen(b.Color);
+
+            for (int i = 0; i < pList.Count; i++)
+            {
+                DrawPoint(pList[i].Item1, pList[i].Item2, b);
+            }
+            var prevP = pList[0];
+            for (int i = 1; i < pList.Count; i++)
+            {
+                int prevX = _cc.RealX2CanvasX(prevP.Item1);
+                int prevY = _cc.CanvasHeight - _cc.RealY2CanvasY(prevP.Item2);
+                int currX = _cc.RealX2CanvasX(pList[i].Item1);
+                int currY = _cc.CanvasHeight - _cc.RealY2CanvasY(pList[i].Item2);
+                _g.DrawLine(p, prevX, prevY, currX, currY);
+                prevP = pList[i];
+            }
         }
 
         private void DrawCubicPolynomial()
@@ -131,12 +164,12 @@ namespace ParametricCurve
             double c1 = _sampledCubic[1];
             double c2 = _sampledCubic[2];
             double c3 = _sampledCubic[3];
-            double min = _sampledU[0];
-            double max = _sampledU[0];
-            for (int i = 1; i < _sampledU.Count; i++)
+            double min = _sampledPoints[0].Item1;
+            double max = _sampledPoints[0].Item1;
+            for (int i = 1; i < _sampledPoints.Count; i++)
             {
-                min = Math.Min(min, _sampledU[i]);
-                max = Math.Max(max, _sampledU[i]);
+                min = Math.Min(min, _sampledPoints[i].Item1);
+                max = Math.Max(max, _sampledPoints[i].Item1);
             }
             if (min > 0)
                 min = 0;
@@ -171,8 +204,9 @@ namespace ParametricCurve
 
             DrawCoordinateLines();
             DrawCurve();
-            DrawSamplePoints();
+            DrawPoints(_sampledPoints);
             DrawCubicPolynomial();
+            DrawAndLinkPoints(_bsplineTargetPoints);
         }
 
         private void ScaleWhenMouseMove(int X, int Y)
@@ -223,5 +257,36 @@ namespace ParametricCurve
             cb.Items.Add(expr);
             return 1;
         }
+
+        private void AddDrawBsplineTargetPoint(object sender, MouseEventArgs e)
+        {
+            if (_curvePoints == null || _curvePoints.Count == 0 || _panel1CurveCount == 0)
+            {
+                MessageBox.Show("Please draw curve first.");
+                return;
+            }
+            // squared distance
+            Func<double, double, double, double, double> sd = (a, b, c, d) => (a - c) * (a - c) + (b - d) * (b - d);
+            double cursorRealX = _cc.CanvasX2RealX(e.X);
+            double cursorRealY = _cc.CanvasY2RealY(_cc.CanvasHeight - e.Y);
+            var nearestP = _curvePoints[0];
+            double nearestDist = sd(nearestP.X, nearestP.Y, cursorRealX, cursorRealY);
+            for (int i = 1; i < _curvePoints.Count; i++)
+            {
+                var point = _curvePoints[i];
+                var dist = sd(point.X, point.Y, cursorRealX, cursorRealY);
+                if (dist < nearestDist)
+                {
+                    nearestDist = dist;
+                    nearestP = point;
+                }
+            }// for
+            _bsplineTargetPoints.Add((nearestP.X, nearestP.Y));
+            string str = $"{nearestP.X,5:N3}: {nearestP.Y,5:N3}";
+            listBoxBsPoints.Items.Add(str);
+
+            DrawAndLinkPoints(_bsplineTargetPoints);
+        }
+
     }
 }

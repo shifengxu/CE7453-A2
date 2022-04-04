@@ -34,6 +34,25 @@ namespace CurveLib
             return MinimizeLoss(A, b, out rmse);
         }
 
+        public double[] GetCubicPolynomial(List<(double, double)> pList, out double rmse)
+        {
+            // get normal equations
+            var uCount = pList.Count;
+            double[,] A = new double[uCount, 4];
+            double[] b = new double[uCount];
+            for (int i = 0; i < uCount; i++)
+            {
+                var u = pList[i].Item1;
+                A[i, 0] = 1;
+                A[i, 1] = u;
+                A[i, 2] = u * u;
+                A[i, 3] = u * u * u;
+                b[i] = pList[i].Item2;
+            }
+
+            return MinimizeLoss(A, b, out rmse);
+        }
+
         public double[] MinimizeLoss(double[,] A, double[] b, out double rmse)
         {
             double[,] A_T = Transpose(A);

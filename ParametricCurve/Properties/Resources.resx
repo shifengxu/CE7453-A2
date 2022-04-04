@@ -127,19 +127,25 @@
   <data name="ResizeX2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\images\ResizeX2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Pointer" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\images\Pointer.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="ResizeY2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\images\ResizeY2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CurveX" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\images\CurveX.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ResizeY" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\images\ResizeY.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Hand" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\images\Hand.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="ResizeY" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\images\ResizeY.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Hand2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\images\Hand2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Pointer2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\images\Pointer2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>
