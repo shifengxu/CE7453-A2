@@ -103,7 +103,7 @@ namespace ParametricCurve
             }
         }
 
-        private void DrawPoint(double x, double y, Brush? b = null)
+        private void DrawPoint(double x, double y, Brush? b = null, bool drawCoordinate = true)
         {
             if (b == null)
                 b = _brush4SamplePoint;
@@ -111,7 +111,10 @@ namespace ParametricCurve
             int panelX = _cc.RealX2CanvasX(x);
             int panelY = _cc.CanvasHeight - _cc.RealY2CanvasY(y);
             _g.FillEllipse(b, panelX - 3, panelY - 3, 6, 6);
-            _g.DrawString($"({x,5:N3},{y,5:N3})", panel1.Font, b, panelX, panelY);
+            if (drawCoordinate)
+            {
+                _g.DrawString($"({x,5:N3},{y,5:N3})", panel1.Font, b, panelX, panelY);
+            }
         }
 
         private void DrawPoints(List<(double, double)> pList, SolidBrush? b = null)
@@ -119,12 +122,19 @@ namespace ParametricCurve
             if (pList == null || pList.Count == 0)
                 return;
 
+            if (pList.Count >= 200)
+            {
+                toolStripStatusLabel1.Text = $"Won't plot sample points as too many: {pList.Count}";
+                return;
+            }
+
             if (b == null)
                 b = _brush4SamplePoint;
 
+            bool drawCoordinate = pList.Count < 100;
             for (int i = 0; i < pList.Count; i++)
             {
-                DrawPoint(pList[i].Item1, pList[i].Item2, b);
+                DrawPoint(pList[i].Item1, pList[i].Item2, b, drawCoordinate);
             }
         }
 
@@ -157,37 +167,22 @@ namespace ParametricCurve
 
         private void DrawCubicPolynomial()
         {
-            if (_sampledCubic == null || _sampledCubic.Length < 4)
+            if (_tempCP.Coefficients == null || _tempCP.Coefficients.Count < 4)
                 return;
 
-            double c0 = _sampledCubic[0];
-            double c1 = _sampledCubic[1];
-            double c2 = _sampledCubic[2];
-            double c3 = _sampledCubic[3];
-            double min = _sampledPoints[0].Item1;
-            double max = _sampledPoints[0].Item1;
-            for (int i = 1; i < _sampledPoints.Count; i++)
-            {
-                min = Math.Min(min, _sampledPoints[i].Item1);
-                max = Math.Max(max, _sampledPoints[i].Item1);
-            }
-            if (min > 0)
-                min = 0;
-            if (max < 1)
-                max = 1;
-            double len = max - min;
-            min -= len / 10;
-            max += len / 10;
-            len = max - min;
+            double c0 = _tempCP.Coefficients[0];
+            double c1 = _tempCP.Coefficients[1];
+            double c2 = _tempCP.Coefficients[2];
+            double c3 = _tempCP.Coefficients[3];
             // draw curve by points
             Pen pen4Curve = new Pen(Color.Green, 2);
             int pht = _cc.CanvasHeight;
-            double u = min;
+            double u = 0;
             int prevCanvasX = _cc.RealX2CanvasX(u);
             int prevCanvasY = _cc.RealY2CanvasY(c0 + c1 * u + c2 * u * u + c3 * u * u * u);
             for (int i = 1; i <= _panel1SegCount; i++)
             {
-                u = min + len * i / _panel1SegCount;
+                u = (double)i / _panel1SegCount;
                 var x = _cc.RealX2CanvasX(u);
                 var y = _cc.RealY2CanvasY(c0 + c1*u + c2*u*u + c3*u*u*u);
                 _g.DrawLine(pen4Curve, prevCanvasX, pht - prevCanvasY, x, pht - y);
@@ -204,7 +199,7 @@ namespace ParametricCurve
 
             DrawCoordinateLines();
             DrawCurve();
-            DrawPoints(_sampledPoints);
+            DrawPoints(_tempCP.SamplePoints);
             DrawCubicPolynomial();
             DrawAndLinkPoints(_bsplineTargetPoints);
         }

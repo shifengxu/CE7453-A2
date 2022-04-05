@@ -27,8 +27,8 @@ namespace CurveLib
         private int _canvasHeight = 0;
         public int CanvasHeight { get => _canvasHeight; }
 
-        public double[]? ExpressionCubicX = null;
-        public double[]? ExpressionCubicY = null;
+        public CubicPolynomial ExpressionCubicX = new CubicPolynomial("cubicX(u)");
+        public CubicPolynomial ExpressionCubicY = new CubicPolynomial("cubicY(u)");
 
         public CurveCanvas(int canvasWidth, int canvasHeight)
         {
@@ -98,7 +98,8 @@ namespace CurveLib
             }
             else if (type == "cubicX(u)" || type == "cubicY(u)")
             {
-                double[]? c = type == "cubicX(u)" ? ExpressionCubicX : ExpressionCubicY;
+                var expr = type == "cubicX(u)" ? ExpressionCubicX : ExpressionCubicY;
+                var c = expr.Coefficients;
                 if (c != null)
                     x = c[0] + c[1] * u + c[2] * u * u + c[3] * u * u * u;
             }
@@ -168,7 +169,7 @@ namespace CurveLib
         //}
         #endregion
 
-        public void UpdateSizeMarginRatioMinMax(int width, int height)
+        public void UpdateSizeMarginRatio(int width, int height)
         {
             _canvasWidth = width;
             _canvasHeight = height;

@@ -33,10 +33,15 @@
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.samplePointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveSamplePointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadSamplePointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.saveCubicPolynomialsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadCubicPolynomialsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.useAllPointsAsSampleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -64,6 +69,8 @@
             this.textBoxExprCubicY = new System.Windows.Forms.TextBox();
             this.listBoxBsPoints = new System.Windows.Forms.ListBox();
             this.buttonSelectBs = new System.Windows.Forms.Button();
+            this.labelSE2 = new System.Windows.Forms.Label();
+            this.textBoxSE2 = new System.Windows.Forms.TextBox();
             this.buttonSaveBs = new System.Windows.Forms.Button();
             this.buttonDrawBs = new System.Windows.Forms.Button();
             this.buttonPlotCurve = new System.Windows.Forms.Button();
@@ -113,6 +120,7 @@
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
+            this.samplePointsToolStripMenuItem,
             this.optionsToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
@@ -125,41 +133,76 @@
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.saveSamplePointsToolStripMenuItem,
-            this.saveCubicPolynomialsToolStripMenuItem,
-            this.loadCubicPolynomialsToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
             this.fileToolStripMenuItem.Text = "File";
             // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(116, 26);
+            this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            // 
+            // samplePointsToolStripMenuItem
+            // 
+            this.samplePointsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.saveSamplePointsToolStripMenuItem,
+            this.loadSamplePointsToolStripMenuItem,
+            this.toolStripMenuItem1,
+            this.saveCubicPolynomialsToolStripMenuItem,
+            this.loadCubicPolynomialsToolStripMenuItem,
+            this.toolStripMenuItem2,
+            this.useAllPointsAsSampleToolStripMenuItem});
+            this.samplePointsToolStripMenuItem.Name = "samplePointsToolStripMenuItem";
+            this.samplePointsToolStripMenuItem.Size = new System.Drawing.Size(116, 24);
+            this.samplePointsToolStripMenuItem.Text = "Sample Points";
+            // 
             // saveSamplePointsToolStripMenuItem
             // 
             this.saveSamplePointsToolStripMenuItem.Name = "saveSamplePointsToolStripMenuItem";
-            this.saveSamplePointsToolStripMenuItem.Size = new System.Drawing.Size(249, 26);
+            this.saveSamplePointsToolStripMenuItem.Size = new System.Drawing.Size(253, 26);
             this.saveSamplePointsToolStripMenuItem.Text = "Save Sample Points";
             this.saveSamplePointsToolStripMenuItem.Click += new System.EventHandler(this.saveSamplePointsToolStripMenuItem_Click);
+            // 
+            // loadSamplePointsToolStripMenuItem
+            // 
+            this.loadSamplePointsToolStripMenuItem.Name = "loadSamplePointsToolStripMenuItem";
+            this.loadSamplePointsToolStripMenuItem.Size = new System.Drawing.Size(253, 26);
+            this.loadSamplePointsToolStripMenuItem.Text = "Load Sample Points";
+            this.loadSamplePointsToolStripMenuItem.Click += new System.EventHandler(this.loadSamplePointsToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(250, 6);
             // 
             // saveCubicPolynomialsToolStripMenuItem
             // 
             this.saveCubicPolynomialsToolStripMenuItem.Name = "saveCubicPolynomialsToolStripMenuItem";
-            this.saveCubicPolynomialsToolStripMenuItem.Size = new System.Drawing.Size(249, 26);
+            this.saveCubicPolynomialsToolStripMenuItem.Size = new System.Drawing.Size(253, 26);
             this.saveCubicPolynomialsToolStripMenuItem.Text = "Save Cubic Polynomials";
             this.saveCubicPolynomialsToolStripMenuItem.Click += new System.EventHandler(this.saveCubicPolynomialsToolStripMenuItem_Click);
             // 
             // loadCubicPolynomialsToolStripMenuItem
             // 
             this.loadCubicPolynomialsToolStripMenuItem.Name = "loadCubicPolynomialsToolStripMenuItem";
-            this.loadCubicPolynomialsToolStripMenuItem.Size = new System.Drawing.Size(249, 26);
+            this.loadCubicPolynomialsToolStripMenuItem.Size = new System.Drawing.Size(253, 26);
             this.loadCubicPolynomialsToolStripMenuItem.Text = "Load Cubic Polynomials";
             this.loadCubicPolynomialsToolStripMenuItem.Click += new System.EventHandler(this.loadCubicPolynomialsToolStripMenuItem_Click);
             // 
-            // exitToolStripMenuItem
+            // toolStripMenuItem2
             // 
-            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(249, 26);
-            this.exitToolStripMenuItem.Text = "Exit";
-            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(250, 6);
+            // 
+            // useAllPointsAsSampleToolStripMenuItem
+            // 
+            this.useAllPointsAsSampleToolStripMenuItem.Name = "useAllPointsAsSampleToolStripMenuItem";
+            this.useAllPointsAsSampleToolStripMenuItem.Size = new System.Drawing.Size(253, 26);
+            this.useAllPointsAsSampleToolStripMenuItem.Text = "Use All Points as Sample";
+            this.useAllPointsAsSampleToolStripMenuItem.Click += new System.EventHandler(this.useAllPointsAsSampleToolStripMenuItem_Click);
             // 
             // optionsToolStripMenuItem
             // 
@@ -317,18 +360,18 @@
             // 
             // textBoxU
             // 
-            this.textBoxU.Location = new System.Drawing.Point(59, 32);
+            this.textBoxU.Location = new System.Drawing.Point(72, 32);
             this.textBoxU.Name = "textBoxU";
-            this.textBoxU.Size = new System.Drawing.Size(55, 27);
+            this.textBoxU.Size = new System.Drawing.Size(59, 27);
             this.textBoxU.TabIndex = 1;
             this.toolTip1.SetToolTip(this.textBoxU, "Value of u");
             this.textBoxU.TextChanged += new System.EventHandler(this.textBoxU_TextChanged);
             // 
             // textBoxFu
             // 
-            this.textBoxFu.Location = new System.Drawing.Point(59, 67);
+            this.textBoxFu.Location = new System.Drawing.Point(72, 67);
             this.textBoxFu.Name = "textBoxFu";
-            this.textBoxFu.Size = new System.Drawing.Size(55, 27);
+            this.textBoxFu.Size = new System.Drawing.Size(59, 27);
             this.textBoxFu.TabIndex = 3;
             this.toolTip1.SetToolTip(this.textBoxFu, "Value of u");
             // 
@@ -345,18 +388,18 @@
             // 
             // textBoxCubicX
             // 
-            this.textBoxCubicX.Location = new System.Drawing.Point(59, 104);
+            this.textBoxCubicX.Location = new System.Drawing.Point(72, 104);
             this.textBoxCubicX.Name = "textBoxCubicX";
             this.textBoxCubicX.ReadOnly = true;
-            this.textBoxCubicX.Size = new System.Drawing.Size(214, 27);
+            this.textBoxCubicX.Size = new System.Drawing.Size(205, 27);
             this.textBoxCubicX.TabIndex = 7;
             this.toolTip1.SetToolTip(this.textBoxCubicX, "c0 + c1*u + c2*u^2, c3*u^3");
             // 
             // buttonDrawCubic
             // 
-            this.buttonDrawCubic.Location = new System.Drawing.Point(184, 143);
+            this.buttonDrawCubic.Location = new System.Drawing.Point(178, 141);
             this.buttonDrawCubic.Name = "buttonDrawCubic";
-            this.buttonDrawCubic.Size = new System.Drawing.Size(93, 28);
+            this.buttonDrawCubic.Size = new System.Drawing.Size(99, 28);
             this.buttonDrawCubic.TabIndex = 8;
             this.buttonDrawCubic.Text = "Draw Cubic";
             this.toolTip1.SetToolTip(this.buttonDrawCubic, "Fit a parametric cubic polynomial");
@@ -365,20 +408,20 @@
             // 
             // textBoxSE
             // 
-            this.textBoxSE.Location = new System.Drawing.Point(59, 140);
+            this.textBoxSE.Location = new System.Drawing.Point(72, 140);
             this.textBoxSE.Name = "textBoxSE";
             this.textBoxSE.ReadOnly = true;
-            this.textBoxSE.Size = new System.Drawing.Size(55, 27);
+            this.textBoxSE.Size = new System.Drawing.Size(59, 27);
             this.textBoxSE.TabIndex = 10;
-            this.toolTip1.SetToolTip(this.textBoxSE, "Root Mean Squred Error");
+            this.toolTip1.SetToolTip(this.textBoxSE, "Root Mean Squred Error of Sample Points");
             // 
             // buttonSetCubic
             // 
-            this.buttonSetCubic.Location = new System.Drawing.Point(104, 182);
+            this.buttonSetCubic.Location = new System.Drawing.Point(178, 180);
             this.buttonSetCubic.Name = "buttonSetCubic";
-            this.buttonSetCubic.Size = new System.Drawing.Size(173, 28);
+            this.buttonSetCubic.Size = new System.Drawing.Size(99, 28);
             this.buttonSetCubic.TabIndex = 13;
-            this.buttonSetCubic.Text = "Set Cubic as Expression";
+            this.buttonSetCubic.Text = "Expr Cubic";
             this.toolTip1.SetToolTip(this.buttonSetCubic, "Add parametric cubic polynomial as expression");
             this.buttonSetCubic.UseVisualStyleBackColor = true;
             this.buttonSetCubic.Click += new System.EventHandler(this.buttonSetCubic_Click);
@@ -388,10 +431,10 @@
             this.labelSE.AutoSize = true;
             this.labelSE.Location = new System.Drawing.Point(6, 143);
             this.labelSE.Name = "labelSE";
-            this.labelSE.Size = new System.Drawing.Size(50, 20);
+            this.labelSE.Size = new System.Drawing.Size(62, 20);
             this.labelSE.TabIndex = 12;
-            this.labelSE.Text = "RMSE:";
-            this.toolTip1.SetToolTip(this.labelSE, "Root Mean Squred Error");
+            this.labelSE.Text = "RMSE 1:";
+            this.toolTip1.SetToolTip(this.labelSE, "Root Mean Squred Error of Sample points");
             // 
             // labelCubic
             // 
@@ -449,6 +492,25 @@
             this.toolTip1.SetToolTip(this.buttonSelectBs, "Select target points for B-Spline");
             this.buttonSelectBs.UseVisualStyleBackColor = true;
             this.buttonSelectBs.Click += new System.EventHandler(this.buttonSelectBs_Click);
+            // 
+            // labelSE2
+            // 
+            this.labelSE2.AutoSize = true;
+            this.labelSE2.Location = new System.Drawing.Point(6, 183);
+            this.labelSE2.Name = "labelSE2";
+            this.labelSE2.Size = new System.Drawing.Size(62, 20);
+            this.labelSE2.TabIndex = 15;
+            this.labelSE2.Text = "RMSE 2:";
+            this.toolTip1.SetToolTip(this.labelSE2, "Root Mean Squred Error of All Points");
+            // 
+            // textBoxSE2
+            // 
+            this.textBoxSE2.Location = new System.Drawing.Point(72, 180);
+            this.textBoxSE2.Name = "textBoxSE2";
+            this.textBoxSE2.ReadOnly = true;
+            this.textBoxSE2.Size = new System.Drawing.Size(59, 27);
+            this.textBoxSE2.TabIndex = 14;
+            this.toolTip1.SetToolTip(this.textBoxSE2, "Root Mean Squred Error of All Points");
             // 
             // buttonSaveBs
             // 
@@ -528,6 +590,8 @@
             // groupBoxPoints
             // 
             this.groupBoxPoints.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxPoints.Controls.Add(this.labelSE2);
+            this.groupBoxPoints.Controls.Add(this.textBoxSE2);
             this.groupBoxPoints.Controls.Add(this.buttonSetCubic);
             this.groupBoxPoints.Controls.Add(this.labelSE);
             this.groupBoxPoints.Controls.Add(this.labelCubic);
@@ -731,5 +795,12 @@
         private Button buttonDrawBs;
         private ListBox listBoxBsPoints;
         private Button buttonSelectBs;
+        private ToolStripMenuItem samplePointsToolStripMenuItem;
+        private ToolStripMenuItem useAllPointsAsSampleToolStripMenuItem;
+        private Label labelSE2;
+        private TextBox textBoxSE2;
+        private ToolStripMenuItem loadSamplePointsToolStripMenuItem;
+        private ToolStripSeparator toolStripMenuItem1;
+        private ToolStripSeparator toolStripMenuItem2;
     }
 }

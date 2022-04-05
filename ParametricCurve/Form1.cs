@@ -45,10 +45,12 @@ namespace ParametricCurve
         private Graphics _g;
         private readonly CurveCanvas _cc;
 
-        // about sample points
         private List<CurveCanvasPoint>? _curvePoints;
-        private List<(double, double)> _sampledPoints = new List<(double, double)>();
-        private double[]? _sampledCubic = null;
+
+        // about sample points
+        private CubicPolynomial _tempCP = new CubicPolynomial("Temp");
+        //private List<(double, double)> _sampledPoints = new List<(double, double)>();
+        //private double[]? _sampledCubic = null;
 
         private readonly Timer panel1ResizeTimer = new Timer();
         private readonly Timer panel1InitTimer = new Timer();
@@ -174,11 +176,15 @@ namespace ParametricCurve
             {
                 if (_panel1CurveCount > 0)
                 {
+                    // if have plotted curve, just update the "u" textbox.
+                    // f(u) will be calculated in textboxU "change" event.
                     textBoxU.Text = $"{x2,5:N3}";
                     textBoxU_TextChanged(sender, e);
                 }
                 else
                 {
+                    // if not platted curve, this means canvas is empty.
+                    // update both u and f(u) textboxes.
                     textBoxU.Text = $"{x2,5:N3}";
                     textBoxFu.Text = $"{y2,5:N3}";
                 }
@@ -289,6 +295,7 @@ namespace ParametricCurve
         private void panel1ResizeTimerTick(object? sender, EventArgs e)
         {
             // after resize, re-render the graph
+            _cc.UpdateSizeMarginRatio(panel1.Width, panel1.Height);
             DrawAll();
 
             panel1ResizeTimer.Enabled = false;
@@ -307,18 +314,14 @@ namespace ParametricCurve
         #region select X Y expression and draw curve
         private void buttonPlotCurve_Click(object sender, EventArgs e)
         {
-            listBoxPoints.Items.Clear();
-            _sampledPoints.Clear();
-            _sampledCubic = null;
-            textBoxCubicX.Text = String.Empty;
-            textBoxSE.Text = String.Empty;
+            ClearSamplePoints();
 
             ResetPanel1OtherButtons();
             _curvePoints = _cc.CalcCurveByType(_expressionX, _expressionY, _panel1SegCount);
 
             if (_panel1CurveCount == 0)
             {
-                _cc.UpdateSizeMarginRatioMinMax(panel1.Width, panel1.Height);
+                _cc.UpdateSizeMarginRatio(panel1.Width, panel1.Height);
                 _g.Clear(Color.White);
                 DrawCoordinateLines();
             }
@@ -328,6 +331,9 @@ namespace ParametricCurve
 
         private void buttonClearGraph_Click(object sender, EventArgs e)
         {
+            ClearSamplePoints();
+            ResetPanel1OtherButtons();
+
             _g.Clear(Color.White);
             _panel1CurveCount = 0;
             DrawCoordinateLines();
@@ -360,11 +366,11 @@ namespace ParametricCurve
                 textBoxExprCubicX.Visible = true;
                 if (comboBoxX.SelectedItem.ToString() == "cubicX(u)")
                 {
-                    textBoxExprCubicX.Text = Utils.GenCubicExpr(_cc.ExpressionCubicX);
+                    textBoxExprCubicX.Text = Utils.GenCubicExpr(_cc.ExpressionCubicX.Coefficients.ToArray());
                 }
                 else
                 {
-                    textBoxExprCubicX.Text = Utils.GenCubicExpr(_cc.ExpressionCubicY);
+                    textBoxExprCubicX.Text = Utils.GenCubicExpr(_cc.ExpressionCubicY.Coefficients.ToArray());
                 }
             }
         }
@@ -397,11 +403,11 @@ namespace ParametricCurve
 
                 if (comboBoxY.SelectedItem.ToString() == "cubicX(u)")
                 {
-                    textBoxExprCubicY.Text = Utils.GenCubicExpr(_cc.ExpressionCubicX);
+                    textBoxExprCubicY.Text = Utils.GenCubicExpr(_cc.ExpressionCubicX.Coefficients.ToArray());
                 }
                 else
                 {
-                    textBoxExprCubicY.Text = Utils.GenCubicExpr(_cc.ExpressionCubicY);
+                    textBoxExprCubicY.Text = Utils.GenCubicExpr(_cc.ExpressionCubicY.Coefficients.ToArray());
                 }
             }
         }
@@ -511,6 +517,8 @@ namespace ParametricCurve
             {
                 if (_panel1CurveCount > 0)
                 {
+                    // If we have plotted curve, we use the Y expression.
+                    // Else, do nothing
                     double fu = _cc.CalcValueByType(_expressionY, x);
                     textBoxFu.Text = $"{fu,5:N3}";
                 }
@@ -552,12 +560,13 @@ namespace ParametricCurve
                 if (res == DialogResult.No)
                     return;
             }
-            _sampledPoints.Add((u, fu));
+            _tempCP.SamplePoints.Add((u, fu));
+            _tempCP.Coefficients.Clear(); // sample points changed, so cubic polynomial obsolete.
             DrawPoint(u, fu);
             listBoxPoints.Items.Add($"{strU}:  {strFu}");
-            _sampledCubic = null; // sample points changed, so cubic polynomial obsolete.
             textBoxCubicX.Text = String.Empty;
             textBoxSE.Text = String.Empty;
+            textBoxSE2.Text = String.Empty;
         }
 
         private void buttonDeletePoint_Click(object sender, EventArgs e)
@@ -570,10 +579,11 @@ namespace ParametricCurve
             }
 
             listBoxPoints.Items.RemoveAt(sel);
-            _sampledPoints.RemoveAt(sel);
-            _sampledCubic = null; // sample points changed, so cubic polynomial obsolete.
+            _tempCP.SamplePoints.RemoveAt(sel);
+            _tempCP.Coefficients.Clear(); // sample points changed, so cubic polynomial obsolete.
             textBoxCubicX.Text = String.Empty;
             textBoxSE.Text = String.Empty;
+            textBoxSE2.Text = String.Empty;
 
             DrawAll();
         }
@@ -585,42 +595,53 @@ namespace ParametricCurve
 
         private void buttonDrawCubic_Click(object sender, EventArgs e)
         {
-            if (_sampledPoints == null || _sampledPoints.Count < 4)
+            if (_tempCP.SamplePoints == null || _tempCP.SamplePoints.Count < 4)
             {
-                MessageBox.Show("We need 4 or more points for such operation.");
+                MessageBox.Show("We need 4 or more points for such operation.",
+                    "information",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
                 return;
             }
             var lsq = new LeastSquaresByLU();
             double rmse;
-            _sampledCubic = lsq.GetCubicPolynomial(_sampledPoints, out rmse);
-            textBoxCubicX.Text = Utils.GenCubicExpr(_sampledCubic);
-            textBoxSE.Text = Utils.RemoveTrailingZeros($"{rmse:N3}");
+            var res = lsq.GetCubicPolynomial(_tempCP.SamplePoints, out rmse);
+            _tempCP.Coefficients = res.ToList();
+            _tempCP.RMSE1 = rmse;
+            _tempCP.RMSE2 = _tempCP.CalcRmse(_curvePoints);
+            textBoxCubicX.Text = Utils.GenCubicExpr(res);
+            textBoxSE.Text = Utils.RemoveTrailingZeros($"{_tempCP.RMSE1:N3}");
+            textBoxSE2.Text = Utils.RemoveTrailingZeros($"{_tempCP.RMSE2:N3}");
 
-            DrawCubicPolynomial();
+            _g.Clear(Color.White);
+            DrawAll();
         }
 
         private void buttonSetCubic_Click(object sender, EventArgs e)
         {
-            if (_sampledCubic == null || _sampledCubic.Length < 4)
+            if (_tempCP.SamplePoints == null || _tempCP.SamplePoints.Count < 4)
             {
-                MessageBox.Show("Please draw cubic polynomial curve first.");
+                MessageBox.Show("Please draw cubic polynomial curve first.",
+                    "information",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
                 return;
             }
             int hIdx = comboBoxY.SelectedIndex;
             if (hIdx == 0)
             {
-                _cc.ExpressionCubicX = _sampledCubic;
+                _cc.ExpressionCubicX.CopyFrom(_tempCP);
                 var res = AddExpression("cubicX(u)");
                 string verb = res > 0 ? "Added" : "Updated";
-                string expr = Utils.GenCubicExpr(_cc.ExpressionCubicX);
+                string expr = Utils.GenCubicExpr(_cc.ExpressionCubicX.Coefficients.ToArray());
                 MessageBox.Show($"{verb} cubicX(u) in expression combobox: \r\n\r\n{expr}");
             }
             else if (hIdx == 1)
             {
-                _cc.ExpressionCubicY = _sampledCubic;
+                _cc.ExpressionCubicY.CopyFrom(_tempCP);
                 var res = AddExpression("cubicY(u)");
                 string verb = res > 0 ? "Added" : "Updated";
-                string expr = Utils.GenCubicExpr(_cc.ExpressionCubicY);
+                string expr = Utils.GenCubicExpr(_cc.ExpressionCubicY.Coefficients.ToArray());
                 MessageBox.Show($"{verb} cubicY(u) in expression combobox: \r\n\r\n{expr}");
             }
             else
@@ -644,18 +665,30 @@ namespace ParametricCurve
                     return;
                 this.saveSamplePointsPath = sfd.FileName;
             }
-            string str1, str2;
-            using (StreamWriter sw = new StreamWriter(this.saveSamplePointsPath))
+            _tempCP.Save(this.saveSamplePointsPath);
+        }
+
+        private void loadSamplePointsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                for (int i = 0; i < _sampledPoints.Count; i++)
-                {
-                    var t = _sampledPoints[i];
-                    str1 = $"{t.Item1,5:N3}";
-                    str2 = $"{t.Item2,5:N3}";
-                    if (str1.EndsWith(".00")) str1 = str1.Replace(".00", "   ");
-                    if (str2.EndsWith(".00")) str2 = str2.Replace(".00", "   ");
-                    sw.WriteLine($"{str1}  {str2}");
-                }
+                openFileDialog.InitialDirectory = this.saveSamplePointsPath;
+                openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                openFileDialog.FilterIndex = 2;
+                openFileDialog.RestoreDirectory = true;
+                if (openFileDialog.ShowDialog() != DialogResult.OK)
+                    return;
+                //Get the path of specified file
+                this.saveSamplePointsPath = openFileDialog.FileName;
+            }
+            _tempCP.Load(this.saveSamplePointsPath);
+            textBoxSE.Text = Utils.RemoveTrailingZeros(_tempCP.RMSE1);
+            textBoxSE2.Text = Utils.RemoveTrailingZeros(_tempCP.RMSE2);
+            textBoxCubicX.Text = Utils.GenCubicExpr(_tempCP.Coefficients);
+            listBoxPoints.Items.Clear();
+            foreach (var p in _tempCP.SamplePoints)
+            {
+                listBoxPoints.Items.Add($"{p.Item1,5:N3}: {p.Item2,5:N3}");
             }
         }
 
@@ -672,27 +705,15 @@ namespace ParametricCurve
                     return;
                 this.saveCubicPolynomialPath = sfd.FileName;
             }
-            using (StreamWriter sw = new StreamWriter(this.saveCubicPolynomialPath))
+            if (_cc.ExpressionCubicX.Coefficients.Count == 0 && _cc.ExpressionCubicY.Coefficients.Count == 0)
             {
-                sw.Write("cubicX(u):");
-                if (_cc.ExpressionCubicX != null)
-                {
-                    foreach (var x in _cc.ExpressionCubicX)
-                    {
-                        sw.Write($" {x:N3}");
-                    }
-                    sw.WriteLine();
-                }
-                sw.Write("cubicY(u):");
-                if (_cc.ExpressionCubicY != null)
-                {
-                    foreach (var x in _cc.ExpressionCubicY)
-                    {
-                        sw.Write($" {x:N3}");
-                    }
-                    sw.WriteLine();
-                }
-            } // using
+                var msg = $"There is no valid data to save. Please add cubic polynomial to expression list." +
+                    $" \r\n\r\nHint: press button \"{buttonSetCubic.Text}\"";
+                MessageBox.Show(msg, "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+            _cc.ExpressionCubicX.Save(saveCubicPolynomialPath, false);
+            _cc.ExpressionCubicY.Save(saveCubicPolynomialPath, true);
         }
 
         private void loadCubicPolynomialsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -708,25 +729,41 @@ namespace ParametricCurve
                 //Get the path of specified file
                 this.saveCubicPolynomialPath = openFileDialog.FileName;
             }
-            string[] lines = File.ReadAllLines(this.saveCubicPolynomialPath);
-            foreach (string line in lines)
+            int cnt = 0;
+            string detail = "";
+            if (_cc.ExpressionCubicX.Load(saveCubicPolynomialPath))
             {
-                string str = line.Trim();
-                if (str.Length == 0 || str.StartsWith("#"))
-                    continue;
-                if (str.StartsWith("cubicX(u):"))
-                {
-                    AddExpression("cubicX(u)");
-                    string[] strArr = str.Split(":")[1].Trim().Split();
-                    _cc.ExpressionCubicX = Array.ConvertAll(strArr, Double.Parse);
-                }
-                if (str.StartsWith("cubicY(u):"))
-                {
-                    AddExpression("cubicY(u)");
-                    string[] strArr = str.Split(":")[1].Trim().Split();
-                    _cc.ExpressionCubicY = Array.ConvertAll(strArr, Double.Parse);
-                }
+                cnt++;
+                detail += $"\r\n\r\n{_cc.ExpressionCubicX.TargetExpression}";
+                detail += $"\r\nSample points count: {_cc.ExpressionCubicX.SamplePoints.Count}";
+                detail += $"\r\nCoefficients: {Utils.GenCubicExpr(_cc.ExpressionCubicX.Coefficients.ToArray())}";
+                AddExpression(_cc.ExpressionCubicX.TargetExpression);
             }
+            if (_cc.ExpressionCubicY.Load(saveCubicPolynomialPath))
+            {
+                cnt++;
+                detail += $"\r\n\r\n{_cc.ExpressionCubicY.TargetExpression}";
+                detail += $"\r\nSample points count: {_cc.ExpressionCubicY.SamplePoints.Count}";
+                detail += $"\r\nCoefficients: {Utils.GenCubicExpr(_cc.ExpressionCubicY.Coefficients.ToArray())}";
+                AddExpression(_cc.ExpressionCubicY.TargetExpression);
+            }
+            MessageBox.Show($"Loaded {cnt} expression(s).{detail}", "Information",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void useAllPointsAsSampleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ClearSamplePoints();
+
+            for (int i = 0; i <= _panel1SegCount; i++)
+            {
+                double u = (double)i / _panel1SegCount;
+                double fu = _cc.CalcValueByType(_expressionY, u);
+                _tempCP.SamplePoints.Add((u, fu));
+                listBoxPoints.Items.Add($"{u,5:N3}: {fu,5:N3}");
+            }
+
+            buttonDrawCubic_Click(sender, e);
         }
         #endregion
 

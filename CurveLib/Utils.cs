@@ -17,6 +17,16 @@ namespace CurveLib
             return str;
         }
 
+        public static string RemoveTrailingZeros(double d)
+        {
+            return RemoveTrailingZeros($"{d:N3}");
+        }
+
+        public static string GenCubicExpr(List<double> list)
+        {
+            return GenCubicExpr(list.ToArray());
+        }
+
         public static string GenCubicExpr(double[]? arr)
         {
             if (arr == null)
