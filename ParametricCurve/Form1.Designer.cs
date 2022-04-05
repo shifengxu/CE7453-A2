@@ -42,8 +42,9 @@
             this.loadCubicPolynomialsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.useAllPointsAsSampleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.bSplineToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveTargetPointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadTargetPointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panelLegend = new System.Windows.Forms.Panel();
             this.buttonMoveGraph = new System.Windows.Forms.Button();
@@ -71,7 +72,6 @@
             this.buttonSelectBs = new System.Windows.Forms.Button();
             this.labelSE2 = new System.Windows.Forms.Label();
             this.textBoxSE2 = new System.Windows.Forms.TextBox();
-            this.buttonSaveBs = new System.Windows.Forms.Button();
             this.buttonDrawBs = new System.Windows.Forms.Button();
             this.buttonPlotCurve = new System.Windows.Forms.Button();
             this.comboBoxX = new System.Windows.Forms.ComboBox();
@@ -87,6 +87,8 @@
             this.groupBoxExpr = new System.Windows.Forms.GroupBox();
             this.groupBoxBspline = new System.Windows.Forms.GroupBox();
             this.buttonDeleteBsPoint = new System.Windows.Forms.Button();
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
+            this.saveBSplineDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -121,8 +123,7 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.samplePointsToolStripMenuItem,
-            this.optionsToolStripMenuItem,
-            this.helpToolStripMenuItem});
+            this.bSplineToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(6, 3, 0, 3);
@@ -204,15 +205,30 @@
             this.useAllPointsAsSampleToolStripMenuItem.Text = "Use All Points as Sample";
             this.useAllPointsAsSampleToolStripMenuItem.Click += new System.EventHandler(this.useAllPointsAsSampleToolStripMenuItem_Click);
             // 
-            // optionsToolStripMenuItem
+            // bSplineToolStripMenuItem
             // 
-            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(14, 24);
+            this.bSplineToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.saveTargetPointsToolStripMenuItem,
+            this.loadTargetPointsToolStripMenuItem,
+            this.toolStripMenuItem3,
+            this.saveBSplineDataToolStripMenuItem});
+            this.bSplineToolStripMenuItem.Name = "bSplineToolStripMenuItem";
+            this.bSplineToolStripMenuItem.Size = new System.Drawing.Size(79, 24);
+            this.bSplineToolStripMenuItem.Text = "B-Spline";
             // 
-            // helpToolStripMenuItem
+            // saveTargetPointsToolStripMenuItem
             // 
-            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(14, 24);
+            this.saveTargetPointsToolStripMenuItem.Name = "saveTargetPointsToolStripMenuItem";
+            this.saveTargetPointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.saveTargetPointsToolStripMenuItem.Text = "Save Target Points";
+            this.saveTargetPointsToolStripMenuItem.Click += new System.EventHandler(this.saveTargetPointsToolStripMenuItem_Click);
+            // 
+            // loadTargetPointsToolStripMenuItem
+            // 
+            this.loadTargetPointsToolStripMenuItem.Name = "loadTargetPointsToolStripMenuItem";
+            this.loadTargetPointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.loadTargetPointsToolStripMenuItem.Text = "Load Target Points";
+            this.loadTargetPointsToolStripMenuItem.Click += new System.EventHandler(this.loadTargetPointsToolStripMenuItem_Click);
             // 
             // panel1
             // 
@@ -512,15 +528,6 @@
             this.textBoxSE2.TabIndex = 14;
             this.toolTip1.SetToolTip(this.textBoxSE2, "Root Mean Squred Error of All Points");
             // 
-            // buttonSaveBs
-            // 
-            this.buttonSaveBs.Location = new System.Drawing.Point(171, 146);
-            this.buttonSaveBs.Name = "buttonSaveBs";
-            this.buttonSaveBs.Size = new System.Drawing.Size(107, 28);
-            this.buttonSaveBs.TabIndex = 22;
-            this.buttonSaveBs.Text = "Save BSpline";
-            this.buttonSaveBs.UseVisualStyleBackColor = true;
-            // 
             // buttonDrawBs
             // 
             this.buttonDrawBs.Location = new System.Drawing.Point(171, 69);
@@ -684,7 +691,6 @@
             // 
             this.groupBoxBspline.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxBspline.Controls.Add(this.buttonSelectBs);
-            this.groupBoxBspline.Controls.Add(this.buttonSaveBs);
             this.groupBoxBspline.Controls.Add(this.buttonDeleteBsPoint);
             this.groupBoxBspline.Controls.Add(this.buttonDrawBs);
             this.groupBoxBspline.Controls.Add(this.listBoxBsPoints);
@@ -704,6 +710,18 @@
             this.buttonDeleteBsPoint.Text = "Delete Point";
             this.buttonDeleteBsPoint.UseVisualStyleBackColor = true;
             this.buttonDeleteBsPoint.Click += new System.EventHandler(this.buttonDeleteBsPoint_Click);
+            // 
+            // toolStripMenuItem3
+            // 
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(221, 6);
+            // 
+            // saveBSplineDataToolStripMenuItem
+            // 
+            this.saveBSplineDataToolStripMenuItem.Name = "saveBSplineDataToolStripMenuItem";
+            this.saveBSplineDataToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.saveBSplineDataToolStripMenuItem.Text = "Save B-Spline Data";
+            this.saveBSplineDataToolStripMenuItem.Click += new System.EventHandler(this.saveBSplineDataToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -749,8 +767,6 @@
         private MenuStrip menuStrip1;
         private ToolStripMenuItem fileToolStripMenuItem;
         private ToolStripMenuItem exitToolStripMenuItem;
-        private ToolStripMenuItem optionsToolStripMenuItem;
-        private ToolStripMenuItem helpToolStripMenuItem;
         private Panel panel1;
         private ToolTip toolTip1;
         private Button buttonPlotCurve;
@@ -790,7 +806,6 @@
         private ToolStripMenuItem saveCubicPolynomialsToolStripMenuItem;
         private ToolStripMenuItem loadCubicPolynomialsToolStripMenuItem;
         private GroupBox groupBoxBspline;
-        private Button buttonSaveBs;
         private Button buttonDeleteBsPoint;
         private Button buttonDrawBs;
         private ListBox listBoxBsPoints;
@@ -802,5 +817,10 @@
         private ToolStripMenuItem loadSamplePointsToolStripMenuItem;
         private ToolStripSeparator toolStripMenuItem1;
         private ToolStripSeparator toolStripMenuItem2;
+        private ToolStripMenuItem bSplineToolStripMenuItem;
+        private ToolStripMenuItem saveTargetPointsToolStripMenuItem;
+        private ToolStripMenuItem loadTargetPointsToolStripMenuItem;
+        private ToolStripSeparator toolStripMenuItem3;
+        private ToolStripMenuItem saveBSplineDataToolStripMenuItem;
     }
 }

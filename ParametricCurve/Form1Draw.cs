@@ -192,6 +192,42 @@ namespace ParametricCurve
 
         }
 
+        private void DrawBspline()
+        {
+            int pht = _cc.CanvasHeight;
+            SolidBrush brush4Rect = new SolidBrush(Color.Red);
+            // draw control points
+            for (int i = 0; i < _bspline.ControlPoints.Count; i++)
+            {
+                var p = _bspline.ControlPoints[i];
+                int panelX = _cc.RealX2CanvasX(p.X);
+                int panelY = pht - _cc.RealY2CanvasY(p.Y);
+                _g.FillRectangle(brush4Rect, panelX - 3, panelY - 3, 6, 6);
+            }
+
+            // draw B-Spline curve by points
+            Pen pen4Curve = new Pen(Color.Red, 2);
+            var prevP = _bspline.GetXYByUValue(0);
+            int prevPanelX = _cc.RealX2CanvasX(prevP.X);
+            int prevPanelY = pht - _cc.RealY2CanvasY(prevP.Y);
+            int currPanelX;
+            int currPanelY;
+            (double X, double Y) currP;
+            for (int i = 1; i < _panel1SegCount; i++)
+            {
+                currP = _bspline.GetXYByUValue((double)i / _panel1SegCount);
+                currPanelX = _cc.RealX2CanvasX(currP.X);
+                currPanelY = pht - _cc.RealY2CanvasY(currP.Y);
+                _g.DrawLine(pen4Curve, prevPanelX, prevPanelY, currPanelX, currPanelY);
+                prevPanelX = currPanelX;
+                prevPanelY = currPanelY;
+            }
+            currP = _bspline.TargetPoints.Last();
+            currPanelX = _cc.RealX2CanvasX(currP.X);
+            currPanelY = pht - _cc.RealY2CanvasY(currP.Y);
+            _g.DrawLine(pen4Curve, prevPanelX, prevPanelY, currPanelX, currPanelY);
+        }
+
         private void DrawAll()
         {
             // clear old graph
@@ -201,7 +237,7 @@ namespace ParametricCurve
             DrawCurve();
             DrawPoints(_tempCP.SamplePoints);
             DrawCubicPolynomial();
-            DrawAndLinkPoints(_bsplineTargetPoints);
+            DrawAndLinkPoints(_bspline.TargetPoints);
         }
 
         private void ScaleWhenMouseMove(int X, int Y)
@@ -276,11 +312,13 @@ namespace ParametricCurve
                     nearestP = point;
                 }
             }// for
-            _bsplineTargetPoints.Add((nearestP.X, nearestP.Y));
+            _bspline.TargetPoints.Add((nearestP.X, nearestP.Y));
+            _bspline.ExpressionIndexX = comboBoxX.SelectedIndex;
+            _bspline.ExpressionIndexY = comboBoxY.SelectedIndex;
             string str = $"{nearestP.X,5:N3}: {nearestP.Y,5:N3}";
             listBoxBsPoints.Items.Add(str);
 
-            DrawAndLinkPoints(_bsplineTargetPoints);
+            DrawAndLinkPoints(_bspline.TargetPoints);
         }
 
     }

@@ -16,5 +16,12 @@ namespace ParametricCurve
             textBoxSE.Text = String.Empty;
             textBoxSE2.Text = String.Empty;
         }
+
+        public void ClearAll()
+        {
+            ClearSamplePoints();
+            listBoxBsPoints.Items.Clear();
+            _bspline.TargetPoints.Clear();
+        }
     }
 }

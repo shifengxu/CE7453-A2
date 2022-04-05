@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParametricCurve", "Parametr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CurveLib", "CurveLib\CurveLib.csproj", "{04DCCB53-346C-4951-8FF7-629AD6A8AB14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurveLibTest", "CurveLibTest\CurveLibTest.csproj", "{EB51B579-3E8B-4B93-8972-C8A19223C541}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CurveLibTest", "CurveLibTest\CurveLibTest.csproj", "{EB51B579-3E8B-4B93-8972-C8A19223C541}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
