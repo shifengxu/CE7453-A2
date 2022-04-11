@@ -42,7 +42,7 @@ namespace ParametricCurve
         private Graphics _g;
         private readonly CurveCanvas _cc;
 
-        private List<CurveCanvasPoint> _curvePoints = new List<CurveCanvasPoint>();
+        private List<(double X, double Y)> _curvePoints = new List<(double X, double Y)>();
 
         // about sample points
         private CubicPolynomial _tempCP = new CubicPolynomial("Temp");

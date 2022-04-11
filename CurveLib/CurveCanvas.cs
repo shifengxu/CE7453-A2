@@ -11,7 +11,7 @@ namespace CurveLib
     {
         private readonly int h = 46; // student index of Xu Shifeng on CE7453
 
-        private readonly List<CurveCanvasPoint> points = new List<CurveCanvasPoint>();
+        private readonly List<(double X, double Y)> points = new List<(double X, double Y)>();
 
         // X * TargetRatioX = canvasX; Y * TargetRatioY = canvasY
         public double TargetRatioX { get; set; } = 100;
@@ -56,24 +56,22 @@ namespace CurveLib
             return res;
         }
 
-        private CurveCanvasPoint CalcPoint(double u)
+        private (double X, double Y) CalcPoint(double u)
         {
             var x = CalcX(u);
             var y = CalcY(u);
-            return new CurveCanvasPoint(0, x, y);
+            return (x, y);
         }
 
-        public List<CurveCanvasPoint> CalcCurve(int segmentCount = 1000)
+        public List<(double X, double Y)> CalcCurve(int segmentCount = 1000)
         {
             points.Clear();
             var p0 = CalcPoint(0);
-            p0.index = 0;
             points.Add(p0);
 
             for(int i = 1; i <= segmentCount; i++)
             {
                 var p = CalcPoint((double)i / segmentCount);
-                p.index = i;
                 points.Add(p);
             }
             //UpdateCanvasSize(CanvasWidth, CanvasHeight);
@@ -110,24 +108,22 @@ namespace CurveLib
             return x;
         }
 
-        private CurveCanvasPoint CalcPointByType(string xType, string yType, double u)
+        private (double X, double Y) CalcPointByType(string xType, string yType, double u)
         {
             double x = CalcValueByType(xType, u);
             double y = CalcValueByType(yType, u);
-            return new CurveCanvasPoint(0, x, y);
+            return (x, y);
         }
 
-        public List<CurveCanvasPoint> CalcCurveByType(string xType, string yType, int segmentCount = 1000)
+        public List<(double X, double Y)> CalcCurveByType(string xType, string yType, int segmentCount = 1000)
         {
             points.Clear();
             var p0 = CalcPointByType(xType, yType, 0);
-            p0.index = 0;
             points.Add(p0);
 
             for (int i = 1; i <= segmentCount; i++)
             {
                 var p = CalcPointByType(xType, yType, (double)i / segmentCount);
-                p.index = i;
                 points.Add(p);
             }
             return points;

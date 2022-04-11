@@ -32,7 +32,7 @@ namespace CurveLib
 
         /** Calculate RMSE by point list
          */
-        public double CalcRmse(List<CurveCanvasPoint>? pList)
+        public double CalcRmse(List<(double X, double Y)>? pList)
         {
             if (pList == null || pList.Count == 0)
                 return 0;
