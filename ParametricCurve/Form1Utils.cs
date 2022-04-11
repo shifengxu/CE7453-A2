@@ -8,20 +8,13 @@ namespace ParametricCurve
 {
     public partial class Form1
     {
-        public void ClearSamplePoints()
-        {
-            listBoxPoints.Items.Clear();
-            _tempCP.Reset();
-            textBoxCubicX.Text = String.Empty;
-            textBoxSE.Text = String.Empty;
-            textBoxSE2.Text = String.Empty;
-        }
 
         public void ClearAll()
         {
-            ClearSamplePoints();
-            listBoxBsPoints.Items.Clear();
+            _curvePoints.Clear();
+            listBoxPoints.Clear();
             _bspline.TargetPoints.Clear();
+            _bsplineSelectFlag = false;
         }
     }
 }

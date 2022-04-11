@@ -170,6 +170,12 @@ namespace ParametricCurve
             if (_tempCP.Coefficients == null || _tempCP.Coefficients.Count < 4)
                 return;
 
+            double minX = 0, maxX = 1;
+            foreach (var p in _tempCP.SamplePoints)
+            {
+                minX = Math.Min(minX, p.Item1);
+                maxX = Math.Max(maxX, p.Item1);
+            }
             double c0 = _tempCP.Coefficients[0];
             double c1 = _tempCP.Coefficients[1];
             double c2 = _tempCP.Coefficients[2];
@@ -177,12 +183,13 @@ namespace ParametricCurve
             // draw curve by points
             Pen pen4Curve = new Pen(Color.Green, 2);
             int pht = _cc.CanvasHeight;
-            double u = 0;
+            double u = minX;
+            double len = maxX - minX;
             int prevCanvasX = _cc.RealX2CanvasX(u);
             int prevCanvasY = _cc.RealY2CanvasY(c0 + c1 * u + c2 * u * u + c3 * u * u * u);
             for (int i = 1; i <= _panel1SegCount; i++)
             {
-                u = (double)i / _panel1SegCount;
+                u = minX + len * i / _panel1SegCount;
                 var x = _cc.RealX2CanvasX(u);
                 var y = _cc.RealY2CanvasY(c0 + c1*u + c2*u*u + c3*u*u*u);
                 _g.DrawLine(pen4Curve, prevCanvasX, pht - prevCanvasY, x, pht - y);
@@ -235,9 +242,12 @@ namespace ParametricCurve
 
             DrawCoordinateLines();
             DrawCurve();
-            DrawPoints(_tempCP.SamplePoints);
+            DrawPoints(listBoxPoints.Points);
             DrawCubicPolynomial();
-            DrawAndLinkPoints(_bspline.TargetPoints);
+            if (_bsplineSelectFlag)
+            {
+                DrawAndLinkPoints(listBoxPoints.Points);
+            }
         }
 
         private void ScaleWhenMouseMove(int X, int Y)
@@ -291,34 +301,34 @@ namespace ParametricCurve
 
         private void AddDrawBsplineTargetPoint(object sender, MouseEventArgs e)
         {
-            if (_curvePoints == null || _curvePoints.Count == 0 || _panel1CurveCount == 0)
-            {
-                MessageBox.Show("Please draw curve first.");
-                return;
-            }
-            // squared distance
-            Func<double, double, double, double, double> sd = (a, b, c, d) => (a - c) * (a - c) + (b - d) * (b - d);
             double cursorRealX = _cc.CanvasX2RealX(e.X);
             double cursorRealY = _cc.CanvasY2RealY(_cc.CanvasHeight - e.Y);
-            var nearestP = _curvePoints[0];
-            double nearestDist = sd(nearestP.X, nearestP.Y, cursorRealX, cursorRealY);
-            for (int i = 1; i < _curvePoints.Count; i++)
+            if (_curvePoints == null || _curvePoints.Count == 0 || _panel1CurveCount == 0)
             {
-                var point = _curvePoints[i];
-                var dist = sd(point.X, point.Y, cursorRealX, cursorRealY);
-                if (dist < nearestDist)
+                //MessageBox.Show("Please draw curve first.");
+                //return;
+                listBoxPoints.Add(cursorRealX, cursorRealY);
+            }
+            else
+            {
+                // squared distance
+                Func<double, double, double, double, double> sd = (a, b, c, d) => (a - c) * (a - c) + (b - d) * (b - d);
+                var nearestP = _curvePoints[0];
+                double nearestDist = sd(nearestP.X, nearestP.Y, cursorRealX, cursorRealY);
+                for (int i = 1; i < _curvePoints.Count; i++)
                 {
-                    nearestDist = dist;
-                    nearestP = point;
-                }
-            }// for
-            _bspline.TargetPoints.Add((nearestP.X, nearestP.Y));
-            _bspline.ExpressionIndexX = comboBoxX.SelectedIndex;
-            _bspline.ExpressionIndexY = comboBoxY.SelectedIndex;
-            string str = $"{nearestP.X,5:N3}: {nearestP.Y,5:N3}";
-            listBoxBsPoints.Items.Add(str);
+                    var point = _curvePoints[i];
+                    var dist = sd(point.X, point.Y, cursorRealX, cursorRealY);
+                    if (dist < nearestDist)
+                    {
+                        nearestDist = dist;
+                        nearestP = point;
+                    }
+                }// for
+                listBoxPoints.Add((nearestP.X, nearestP.Y));
+            }
 
-            DrawAndLinkPoints(_bspline.TargetPoints);
+            DrawAndLinkPoints(listBoxPoints.Points);
         }
 
     }

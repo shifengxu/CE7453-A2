@@ -42,7 +42,7 @@ namespace ParametricCurve
         private Graphics _g;
         private readonly CurveCanvas _cc;
 
-        private List<CurveCanvasPoint>? _curvePoints;
+        private List<CurveCanvasPoint> _curvePoints = new List<CurveCanvasPoint>();
 
         // about sample points
         private CubicPolynomial _tempCP = new CubicPolynomial("Temp");
@@ -71,6 +71,8 @@ namespace ParametricCurve
             comboBoxY.Items.Add("y(u)");
             comboBoxY.Items.Add("u");
             comboBoxY.SelectedIndex = 1;
+
+            listBoxPoints.OnListChanged += PointListChanged;
 
             // Dynamic evaluation by string expression, for X and Y coordinate.
             // But it is too slow. So we have to abandon it here.
@@ -307,7 +309,7 @@ namespace ParametricCurve
         #region select X Y expression and draw curve
         private void buttonPlotCurve_Click(object sender, EventArgs e)
         {
-            ClearSamplePoints();
+            listBoxPoints.Clear();
 
             ResetPanel1OtherButtons();
             string ex = (string)comboBoxX.SelectedItem;
@@ -339,23 +341,22 @@ namespace ParametricCurve
             var idx = comboBoxX.SelectedIndex;
             if(idx == 0)
             {
-                panelExprX.Visible = true;
                 panelExprX.BackgroundImage = Properties.Resources.CurveX;
                 textBoxExprCubicX.Visible = false;
             }
             else if(idx == 1)
             {
-                panelExprX.Visible = true;
                 panelExprX.BackgroundImage = Properties.Resources.CurveY;
                 textBoxExprCubicX.Visible = false;
             }
             else if (idx == 2)
             {
-                panelExprX.Visible = false;
+                panelExprX.BackgroundImage = null;
+                textBoxExprCubicX.Visible = true;
+                textBoxExprCubicX.Text = "u";
             }
             else if (idx == 3 || idx == 4)
             {
-                panelExprX.Visible = true;
                 panelExprX.BackgroundImage = null;
                 textBoxExprCubicX.Visible = true;
                 if (comboBoxX.SelectedItem.ToString() == "cubicX(u)")
@@ -374,23 +375,22 @@ namespace ParametricCurve
             var idx = comboBoxY.SelectedIndex;
             if (idx == 0)
             {
-                panelExprY.Visible = true;
                 panelExprY.BackgroundImage = Properties.Resources.CurveX;
                 textBoxExprCubicY.Visible = false;
             }
             else if (idx == 1)
             {
-                panelExprY.Visible = true;
                 panelExprY.BackgroundImage = Properties.Resources.CurveY;
                 textBoxExprCubicY.Visible = false;
             }
             else if (idx == 2)
             {
-                panelExprY.Visible = false;
+                panelExprY.BackgroundImage = null;
+                textBoxExprCubicY.Visible = true;
+                textBoxExprCubicY.Text = "u";
             }
             else if (idx == 3 || idx == 4)
             {
-                panelExprY.Visible = true;
                 panelExprY.BackgroundImage = null;
                 textBoxExprCubicY.Visible = true;
 
@@ -538,30 +538,25 @@ namespace ParametricCurve
                 MessageBox.Show($"Invalid f(u) value: {strFu}", "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
-            if (_curvePoints == null || _curvePoints.Count == 0)
-            {
-                MessageBox.Show("Please plot curve first.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                return;
-            }
-            if ((string)comboBoxX.SelectedItem != "u")
-            {
-                var msg = "The Horizontal axis expression is not \"u\". The point may not plot in the curve." +
-                    "\r\n\r\n Do you continue?";
-                var res = MessageBox.Show(msg, "Please confirm", MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
-                if (res == DialogResult.No)
-                    return;
-            }
-            _tempCP.SamplePoints.Add((u, fu));
-            _tempCP.Coefficients.Clear(); // sample points changed, so cubic polynomial obsolete.
+            //if (_curvePoints == null || _curvePoints.Count == 0)
+            //{
+            //    MessageBox.Show("Please plot curve first.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            //    return;
+            //}
+            //if ((string)comboBoxX.SelectedItem != "u")
+            //{
+            //    var msg = "The Horizontal axis expression is not \"u\". The point may not plot in the curve." +
+            //        "\r\n\r\n Do you continue?";
+            //    var res = MessageBox.Show(msg, "Please confirm", MessageBoxButtons.YesNo,
+            //        MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+            //    if (res == DialogResult.No)
+            //        return;
+            //}
             DrawPoint(u, fu);
-            listBoxPoints.Items.Add($"{strU}:  {strFu}");
-            textBoxCubicX.Text = String.Empty;
-            textBoxSE.Text = String.Empty;
-            textBoxSE2.Text = String.Empty;
+            listBoxPoints.Add((u, fu));
         }
 
-        private void buttonDeletePoint_Click(object sender, EventArgs e)
+        private void listBoxPoints_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             int sel = listBoxPoints.SelectedIndex;
             if (sel < 0)
@@ -569,25 +564,21 @@ namespace ParametricCurve
                 MessageBox.Show("Please select point from point list.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
-
-            listBoxPoints.Items.RemoveAt(sel);
-            _tempCP.SamplePoints.RemoveAt(sel);
-            _tempCP.Coefficients.Clear(); // sample points changed, so cubic polynomial obsolete.
-            textBoxCubicX.Text = String.Empty;
-            textBoxSE.Text = String.Empty;
-            textBoxSE2.Text = String.Empty;
-
+            listBoxPoints.RemoveAt(sel);
             DrawAll();
         }
 
-        private void listBoxPoints_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void PointListChanged()
         {
-            buttonDeletePoint_Click(sender, e);
+            _tempCP.Reset(); // sample points changed, so cubic polynomial obsolete.
+            textBoxCubicX.Text = String.Empty;
+            textBoxSE.Text = String.Empty;
+            textBoxSE2.Text = String.Empty;
         }
 
         private void buttonDrawCubic_Click(object sender, EventArgs e)
         {
-            if (_tempCP.SamplePoints == null || _tempCP.SamplePoints.Count < 4)
+            if (listBoxPoints.Items.Count < 4)
             {
                 MessageBox.Show("We need 4 or more points for such operation.",
                     "information",
@@ -597,8 +588,10 @@ namespace ParametricCurve
             }
             var lsq = new LeastSquaresByLU();
             double rmse;
-            var res = lsq.GetCubicPolynomial(_tempCP.SamplePoints, out rmse);
+            var res = lsq.GetCubicPolynomial(listBoxPoints.Points, out rmse);
             _tempCP.Coefficients = res.ToList();
+            _tempCP.SamplePoints.Clear();
+            _tempCP.SamplePoints.AddRange(listBoxPoints.Points);
             _tempCP.RMSE1 = rmse;
             _tempCP.RMSE2 = _tempCP.CalcRmse(_curvePoints);
             textBoxCubicX.Text = Utils.GenCubicExpr(res);
@@ -686,10 +679,10 @@ namespace ParametricCurve
             textBoxSE.Text = Utils.RemoveTrailingZeros(_tempCP.RMSE1);
             textBoxSE2.Text = Utils.RemoveTrailingZeros(_tempCP.RMSE2);
             textBoxCubicX.Text = Utils.GenCubicExpr(_tempCP.Coefficients);
-            listBoxPoints.Items.Clear();
+            listBoxPoints.Clear();
             foreach (var p in _tempCP.SamplePoints)
             {
-                listBoxPoints.Items.Add($"{p.Item1,5:N3}: {p.Item2,5:N3}");
+                listBoxPoints.Add(p);
             }
         }
 
@@ -754,14 +747,13 @@ namespace ParametricCurve
 
         private void useAllPointsAsSampleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ClearSamplePoints();
+            listBoxPoints.Clear();
             string ey = (string)comboBoxY.SelectedItem;
             for (int i = 0; i <= _panel1SegCount; i++)
             {
                 double u = (double)i / _panel1SegCount;
                 double fu = _cc.CalcValueByType(ey, u);
-                _tempCP.SamplePoints.Add((u, fu));
-                listBoxPoints.Items.Add($"{u,5:N3}: {fu,5:N3}");
+                listBoxPoints.Add((u, fu));
             }
 
             buttonDrawCubic_Click(sender, e);
@@ -787,32 +779,10 @@ namespace ParametricCurve
             }
         }
 
-        private void buttonDeleteBsPoint_Click(object sender, EventArgs e)
-        {
-            var sel = listBoxBsPoints.SelectedIndex;
-            if (sel == -1)
-            {
-                MessageBox.Show("Please select point from B-Spline point list.",
-                    "Information",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
-                return;
-            }
-            listBoxBsPoints.Items.RemoveAt(sel);
-            _bspline.TargetPoints.RemoveAt(sel);
-
-            DrawAll();
-        }
-
-        private void listBoxBsPoints_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            buttonDeleteBsPoint_Click(sender, e);
-        }
-
         private void buttonDrawBs_Click(object sender, EventArgs e)
         {
             int minCnt = 10;
-            if (_bspline.TargetPoints == null || _bspline.TargetPoints.Count < minCnt)
+            if (listBoxPoints.Items.Count < minCnt)
             {
                 MessageBox.Show($"BSpline: you need to select {minCnt} target point at least.",
                     "Information",
@@ -820,6 +790,10 @@ namespace ParametricCurve
                     MessageBoxIcon.Exclamation);
                 return;
             }
+            _bspline.TargetPoints.Clear();
+            _bspline.TargetPoints.AddRange(listBoxPoints.Points);
+            _bspline.ExpressionIndexX = comboBoxX.SelectedIndex;
+            _bspline.ExpressionIndexY = comboBoxY.SelectedIndex;
             _bspline.Run();
             DrawBspline();
         }
@@ -857,9 +831,10 @@ namespace ParametricCurve
             _bspline.LoadTargetPoints(this.saveBsTargetPointsPath);
             comboBoxX.SelectedIndex = _bspline.ExpressionIndexX;
             comboBoxY.SelectedIndex = _bspline.ExpressionIndexY;
+            listBoxPoints.Clear();
             foreach (var p in _bspline.TargetPoints)
             {
-                listBoxBsPoints.Items.Add($"{p.Item1,5:N3}: {p.Item2,5:N3}");
+                listBoxPoints.Add(p);
             }
             buttonPlotCurve_Click(sender, e);
             DrawAndLinkPoints(_bspline.TargetPoints);
