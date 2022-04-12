@@ -111,7 +111,7 @@ namespace CurveLib
             // start to find L and U, given PA=LU.
             for (int rIdx = 0; rIdx < dim1 - 1; rIdx++)
             {
-                var maxRowIdx = FindMaxMagnitudeRowByColumn(PA, rIdx);
+                var maxRowIdx = FindMaxMagnitudeRowByColumn(U, rIdx); // remark: changed PA to U
                 if (maxRowIdx != rIdx)
                 {
                     SwitchRows(PA, maxRowIdx, rIdx);
