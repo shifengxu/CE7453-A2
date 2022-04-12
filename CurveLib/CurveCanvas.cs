@@ -30,6 +30,9 @@ namespace CurveLib
         public CubicPolynomial ExpressionCubicX = new CubicPolynomial("cubicX(u)");
         public CubicPolynomial ExpressionCubicY = new CubicPolynomial("cubicY(u)");
 
+        public FourierEngine ExpressionFourierX = new FourierEngine();
+        public FourierEngine ExpressionFourierY = new FourierEngine();
+
         public CurveCanvas(int canvasWidth, int canvasHeight)
         {
             this._canvasWidth = canvasWidth;
@@ -100,6 +103,11 @@ namespace CurveLib
                 var c = expr.Coefficients;
                 if (c != null)
                     x = c[0] + c[1] * u + c[2] * u * u + c[3] * u * u * u;
+            }
+            else if (type == "fourierX(u)" || type == "fourierY(u)")
+            {
+                var expr = type == "fourierX(u)" ? ExpressionFourierX : ExpressionFourierY;
+                x = expr.CalcValue(u);
             }
             else
             {

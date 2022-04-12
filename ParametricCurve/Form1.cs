@@ -33,6 +33,9 @@ namespace ParametricCurve
         private bool _bsplineSelectFlag = false;
         private BsplineAdapter _bspline = new BsplineAdapter();
 
+        // Fourier
+        private FourierEngine _fourierEngine = new FourierEngine();
+
         private readonly SolidBrush _brush4SamplePoint = new SolidBrush(Color.Green);
         private readonly Pen[] _pen4CurveArr = new Pen[]
         {
@@ -89,7 +92,6 @@ namespace ParametricCurve
             //textBoxX.Text = Regex.Replace(xExpr, @"\r\n\s+", "\r\n");
             //textBoxY.Text = Regex.Replace(yExpr, @"\r\n\s+", "\r\n");
         }
-
         private void Form1_Load(object sender, EventArgs e)
         {
             if (File.Exists(this.initCfgFilePath) == false)
@@ -336,73 +338,60 @@ namespace ParametricCurve
             DrawCoordinateLines();
         }
 
-        private void comboBoxX_SelectedIndexChanged(object sender, EventArgs e)
+        private void UpdateExpression(string expr, Panel panel, TextBox textbox)
         {
-            var idx = comboBoxX.SelectedIndex;
-            if(idx == 0)
+            if (expr == "x(u)")
             {
-                panelExprX.BackgroundImage = Properties.Resources.CurveX;
-                textBoxExprCubicX.Visible = false;
+                panel.BackgroundImage = Properties.Resources.CurveX;
+                textbox.Visible = false;
             }
-            else if(idx == 1)
+            else if (expr == "y(u)")
             {
-                panelExprX.BackgroundImage = Properties.Resources.CurveY;
-                textBoxExprCubicX.Visible = false;
+                panel.BackgroundImage = Properties.Resources.CurveY;
+                textbox.Visible = false;
             }
-            else if (idx == 2)
+            else if (expr == "u")
             {
-                panelExprX.BackgroundImage = null;
+                panel.BackgroundImage = null;
                 textBoxExprCubicX.Visible = true;
                 textBoxExprCubicX.Text = "u";
             }
-            else if (idx == 3 || idx == 4)
+            else if (expr == "cubicX(u)")
             {
-                panelExprX.BackgroundImage = null;
-                textBoxExprCubicX.Visible = true;
-                if (comboBoxX.SelectedItem.ToString() == "cubicX(u)")
-                {
-                    textBoxExprCubicX.Text = Utils.GenCubicExpr(_cc.ExpressionCubicX.Coefficients.ToArray());
-                }
-                else
-                {
-                    textBoxExprCubicX.Text = Utils.GenCubicExpr(_cc.ExpressionCubicY.Coefficients.ToArray());
-                }
+                panel.BackgroundImage = null;
+                textbox.Visible = true;
+                textbox.Text = Utils.GenCubicExpr(_cc.ExpressionCubicX.Coefficients.ToArray());
             }
+            else if (expr == "cubicY(u)")
+            {
+                panel.BackgroundImage = null;
+                textbox.Visible = true;
+                textbox.Text = Utils.GenCubicExpr(_cc.ExpressionCubicY.Coefficients.ToArray());
+            }
+            else if (expr == "fourierX(u)")
+            {
+                panel.BackgroundImage = null;
+                textbox.Visible = true;
+                textbox.Text = _cc.ExpressionFourierX.GetStringOfAB();
+            }
+            else if (expr == "fourierY(u)")
+            {
+                panel.BackgroundImage = null;
+                textbox.Visible = true;
+                textbox.Text = _cc.ExpressionFourierY.GetStringOfAB();
+            }
+        }
+
+        private void comboBoxX_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string expr = (string)comboBoxX.SelectedItem;
+            UpdateExpression(expr, panelExprX, textBoxExprCubicX);
         }
 
         private void comboBoxY_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var idx = comboBoxY.SelectedIndex;
-            if (idx == 0)
-            {
-                panelExprY.BackgroundImage = Properties.Resources.CurveX;
-                textBoxExprCubicY.Visible = false;
-            }
-            else if (idx == 1)
-            {
-                panelExprY.BackgroundImage = Properties.Resources.CurveY;
-                textBoxExprCubicY.Visible = false;
-            }
-            else if (idx == 2)
-            {
-                panelExprY.BackgroundImage = null;
-                textBoxExprCubicY.Visible = true;
-                textBoxExprCubicY.Text = "u";
-            }
-            else if (idx == 3 || idx == 4)
-            {
-                panelExprY.BackgroundImage = null;
-                textBoxExprCubicY.Visible = true;
-
-                if (comboBoxY.SelectedItem.ToString() == "cubicX(u)")
-                {
-                    textBoxExprCubicY.Text = Utils.GenCubicExpr(_cc.ExpressionCubicX.Coefficients.ToArray());
-                }
-                else
-                {
-                    textBoxExprCubicY.Text = Utils.GenCubicExpr(_cc.ExpressionCubicY.Coefficients.ToArray());
-                }
-            }
+            string expr = (string)comboBoxY.SelectedItem;
+            UpdateExpression(expr, panelExprY, textBoxExprCubicY);
         }
         #endregion
 
@@ -637,7 +626,7 @@ namespace ParametricCurve
             }
             else
             {
-                MessageBox.Show("H (horizontal) expression should be x(u) or y(u).",
+                MessageBox.Show("V (Vertical) expression should be x(u) or y(u).",
                     "information",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Exclamation);
@@ -761,6 +750,7 @@ namespace ParametricCurve
         #endregion
 
         // ******************************************************************** B-Spline
+        #region B-Spline
         private void buttonSelectBs_Click(object sender, EventArgs e)
         {
             if (_bsplineSelectFlag == false)
@@ -861,6 +851,114 @@ namespace ParametricCurve
                 this.saveBsTargetPointsPath = sfd.FileName;
             }
             _bspline.Save(this.saveBsTargetPointsPath);
+        }
+
+        #endregion
+
+        // ******************************************************************** Fourier
+        private void buttonDrawFourier_Click(object sender, EventArgs e)
+        {
+            if (listBoxPoints.Items.Count < 4)
+            {
+                MessageBox.Show("We need 4 or more points for such operation.",
+                    "information",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+                return;
+            }
+            _fourierEngine.SetPoints(listBoxPoints.Points);
+            _fourierEngine.CalcCoefficients();
+            DrawFourier();
+        }
+
+        private void AddUniformPoints2SampleList(int n)
+        {
+            if ((string)comboBoxX.SelectedItem != "u")
+            {
+                var msg = "The Horizontal axis expression is not \"u\". The point may not plot in the curve.";
+                MessageBox.Show(msg, "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+
+            listBoxPoints.Clear();
+            var ey = (string)comboBoxY.SelectedItem;
+            for (int i = 0; i < n; i++)
+            {
+                double u = (double)i / n;
+                double fu = _cc.CalcValueByType(ey, u);
+                listBoxPoints.Add(u, fu);
+            }
+            DrawAll();
+        }
+
+        private void uniform4PointsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AddUniformPoints2SampleList(4);
+        }
+
+        private void uniform6PointsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AddUniformPoints2SampleList(6);
+        }
+
+        private void uniform8PointsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AddUniformPoints2SampleList(8);
+        }
+
+        private void uniform12PointsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AddUniformPoints2SampleList(12);
+        }
+
+        private void uniform16PointsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AddUniformPoints2SampleList(16);
+        }
+
+        private void buttonExprFourier_Click(object sender, EventArgs e)
+        {
+            if (_fourierEngine.a == null || _fourierEngine.a.Count < 3)
+            {
+                MessageBox.Show("Please draw Fourier Trigonometric Interpolation curve first.",
+                    "information",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+                return;
+            }
+            int hIdx = comboBoxY.SelectedIndex;
+            if (hIdx == 0)
+            {
+                _cc.ExpressionFourierX.CopyFrom(_fourierEngine);
+                var res = AddExpression("fourierX(u)");
+                string verb = res > 0 ? "Added" : "Updated";
+                string expr = _cc.ExpressionFourierX.GetStringOfA();
+                expr += "\r\n" + _cc.ExpressionFourierX.GetStringOfB();
+                MessageBox.Show($"{verb} fourierX(u) in expression combobox: \r\n\r\n{expr}",
+                    "information",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            else if (hIdx == 1)
+            {
+                _cc.ExpressionFourierY.CopyFrom(_fourierEngine);
+                var res = AddExpression("fourierY(u)");
+                string verb = res > 0 ? "Added" : "Updated";
+                string expr = _cc.ExpressionFourierY.GetStringOfA();
+                expr += "\r\n" + _cc.ExpressionFourierY.GetStringOfB();
+                MessageBox.Show($"{verb} fourierY(u) in expression combobox: \r\n\r\n{expr}",
+                    "information",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("V (Vertical) expression should be x(u) or y(u).",
+                    "information",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+            }
+
         }
     }
 }

@@ -199,6 +199,29 @@ namespace ParametricCurve
 
         }
 
+        private void DrawFourier()
+        {
+            int pht = _cc.CanvasHeight;
+
+            Pen pen4Curve = new Pen(Color.Red, 2);
+            double realX = 0;
+            double realY = _fourierEngine.CalcValue(realX);
+            int prevPanelX = _cc.RealX2CanvasX(realX);
+            int prevPanelY = pht - _cc.RealY2CanvasY(realY);
+            int currPanelX;
+            int currPanelY;
+            for (int i = 1; i <= _panel1SegCount; i++)
+            {
+                realX = (double)i / _panel1SegCount;
+                realY = _fourierEngine.CalcValue(realX);
+                currPanelX = _cc.RealX2CanvasX(realX);
+                currPanelY = pht - _cc.RealY2CanvasY(realY);
+                _g.DrawLine(pen4Curve, prevPanelX, prevPanelY, currPanelX, currPanelY);
+                prevPanelX = currPanelX;
+                prevPanelY = currPanelY;
+            }
+        }
+
         private void DrawBspline()
         {
             int pht = _cc.CanvasHeight;
