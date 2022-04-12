@@ -34,7 +34,7 @@ namespace ParametricCurve
         private BsplineAdapter _bspline = new BsplineAdapter();
 
         // Fourier
-        private FourierEngine _fourierEngine = new FourierEngine();
+        private FourierEngine _fourierEngine = new FourierEngine("Temp");
 
         private readonly SolidBrush _brush4SamplePoint = new SolidBrush(Color.Green);
         private readonly Pen[] _pen4CurveArr = new Pen[]
@@ -311,8 +311,6 @@ namespace ParametricCurve
         #region select X Y expression and draw curve
         private void buttonPlotCurve_Click(object sender, EventArgs e)
         {
-            listBoxPoints.Clear();
-
             ResetPanel1OtherButtons();
             string ex = (string)comboBoxX.SelectedItem;
             string ey = (string)comboBoxY.SelectedItem;
@@ -959,6 +957,30 @@ namespace ParametricCurve
                     MessageBoxIcon.Exclamation);
             }
 
+        }
+
+        private void saveCoefficientsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_cc.ExpressionFourierX.a.Count == 0 && _cc.ExpressionFourierY.b.Count == 0)
+            {
+                MessageBox.Show("Fourier curve not generated. Please draw it first.",
+                    "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.InitialDirectory = this.saveBsTargetPointsPath;
+                sfd.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                sfd.FilterIndex = 2;
+                sfd.RestoreDirectory = true;
+                sfd.FileName = "fourier-data.txt";
+                if (sfd.ShowDialog() != DialogResult.OK)
+                    return;
+                this.saveBsTargetPointsPath = sfd.FileName;
+            }
+            _cc.ExpressionFourierX.Save(this.saveBsTargetPointsPath, false);
+            _cc.ExpressionFourierY.Save(this.saveBsTargetPointsPath, true);
         }
     }
 }

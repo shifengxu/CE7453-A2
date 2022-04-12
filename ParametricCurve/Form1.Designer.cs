@@ -49,6 +49,7 @@
             this.saveBSplineDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fourierToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.uniform4PointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.uniform6PointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.uniform8PointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.uniform12PointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.uniform16PointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -96,7 +97,8 @@
             this.buttonExprFourier = new System.Windows.Forms.Button();
             this.labelSamplePoints = new System.Windows.Forms.Label();
             this.groupBoxCubic = new System.Windows.Forms.GroupBox();
-            this.uniform6PointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.saveCoefficientsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -232,26 +234,26 @@
             // saveTargetPointsToolStripMenuItem
             // 
             this.saveTargetPointsToolStripMenuItem.Name = "saveTargetPointsToolStripMenuItem";
-            this.saveTargetPointsToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
+            this.saveTargetPointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.saveTargetPointsToolStripMenuItem.Text = "Save Target Points";
             this.saveTargetPointsToolStripMenuItem.Click += new System.EventHandler(this.saveTargetPointsToolStripMenuItem_Click);
             // 
             // loadTargetPointsToolStripMenuItem
             // 
             this.loadTargetPointsToolStripMenuItem.Name = "loadTargetPointsToolStripMenuItem";
-            this.loadTargetPointsToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
+            this.loadTargetPointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.loadTargetPointsToolStripMenuItem.Text = "Load Target Points";
             this.loadTargetPointsToolStripMenuItem.Click += new System.EventHandler(this.loadTargetPointsToolStripMenuItem_Click);
             // 
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(216, 6);
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(221, 6);
             // 
             // saveBSplineDataToolStripMenuItem
             // 
             this.saveBSplineDataToolStripMenuItem.Name = "saveBSplineDataToolStripMenuItem";
-            this.saveBSplineDataToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
+            this.saveBSplineDataToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.saveBSplineDataToolStripMenuItem.Text = "Save B-Spline Data";
             this.saveBSplineDataToolStripMenuItem.Click += new System.EventHandler(this.saveBSplineDataToolStripMenuItem_Click);
             // 
@@ -262,7 +264,9 @@
             this.uniform6PointsToolStripMenuItem,
             this.uniform8PointsToolStripMenuItem,
             this.uniform12PointsToolStripMenuItem,
-            this.uniform16PointsToolStripMenuItem});
+            this.uniform16PointsToolStripMenuItem,
+            this.toolStripMenuItem2,
+            this.saveCoefficientsToolStripMenuItem});
             this.fourierToolStripMenuItem.Name = "fourierToolStripMenuItem";
             this.fourierToolStripMenuItem.Size = new System.Drawing.Size(69, 24);
             this.fourierToolStripMenuItem.Text = "Fourier";
@@ -273,6 +277,13 @@
             this.uniform4PointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.uniform4PointsToolStripMenuItem.Text = "Uniform 4 Points";
             this.uniform4PointsToolStripMenuItem.Click += new System.EventHandler(this.uniform4PointsToolStripMenuItem_Click);
+            // 
+            // uniform6PointsToolStripMenuItem
+            // 
+            this.uniform6PointsToolStripMenuItem.Name = "uniform6PointsToolStripMenuItem";
+            this.uniform6PointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.uniform6PointsToolStripMenuItem.Text = "Uniform 6 Points";
+            this.uniform6PointsToolStripMenuItem.Click += new System.EventHandler(this.uniform6PointsToolStripMenuItem_Click);
             // 
             // uniform8PointsToolStripMenuItem
             // 
@@ -792,12 +803,17 @@
             this.groupBoxCubic.TabStop = false;
             this.groupBoxCubic.Text = "Cubic Polynomial";
             // 
-            // uniform6PointsToolStripMenuItem
+            // toolStripMenuItem2
             // 
-            this.uniform6PointsToolStripMenuItem.Name = "uniform6PointsToolStripMenuItem";
-            this.uniform6PointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
-            this.uniform6PointsToolStripMenuItem.Text = "Uniform 6 Points";
-            this.uniform6PointsToolStripMenuItem.Click += new System.EventHandler(this.uniform6PointsToolStripMenuItem_Click);
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(221, 6);
+            // 
+            // saveCoefficientsToolStripMenuItem
+            // 
+            this.saveCoefficientsToolStripMenuItem.Name = "saveCoefficientsToolStripMenuItem";
+            this.saveCoefficientsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.saveCoefficientsToolStripMenuItem.Text = "Save Coefficients";
+            this.saveCoefficientsToolStripMenuItem.Click += new System.EventHandler(this.saveCoefficientsToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -913,5 +929,7 @@
         private ToolStripMenuItem uniform16PointsToolStripMenuItem;
         private ToolStripMenuItem uniform12PointsToolStripMenuItem;
         private ToolStripMenuItem uniform6PointsToolStripMenuItem;
+        private ToolStripSeparator toolStripMenuItem2;
+        private ToolStripMenuItem saveCoefficientsToolStripMenuItem;
     }
 }

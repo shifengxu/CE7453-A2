@@ -30,8 +30,8 @@ namespace CurveLib
         public CubicPolynomial ExpressionCubicX = new CubicPolynomial("cubicX(u)");
         public CubicPolynomial ExpressionCubicY = new CubicPolynomial("cubicY(u)");
 
-        public FourierEngine ExpressionFourierX = new FourierEngine();
-        public FourierEngine ExpressionFourierY = new FourierEngine();
+        public FourierEngine ExpressionFourierX = new FourierEngine("fourierX(u)");
+        public FourierEngine ExpressionFourierY = new FourierEngine("fourierY(u)");
 
         public CurveCanvas(int canvasWidth, int canvasHeight)
         {
