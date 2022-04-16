@@ -753,8 +753,6 @@ namespace ParametricCurve
                 double fu = _cc.CalcValueByType(ey, u);
                 listBoxPoints.Add((u, fu));
             }
-
-            buttonDrawCubic_Click(sender, e);
         }
         #endregion
 
@@ -1001,6 +999,8 @@ namespace ParametricCurve
         }
         #endregion
 
+        // ******************************************************************** Integration
+        #region Ingetration
         private void buttonIntgr_Click(object sender, EventArgs e)
         {
             string msg = String.Empty;
@@ -1074,9 +1074,7 @@ namespace ParametricCurve
 
                 DrawIntgrGaussianQuadrature(weightList, minX, maxX);
             }
-            toolStripStatusLabel1.Text = msg;
-            toolStripStatusLabel1.BackColor = Color.Pink;
-            statusLabelTimer.Start();
+            UpdateStatusText(msg);
         }
 
         private void saveAllGridForAllRulesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1173,7 +1171,32 @@ namespace ParametricCurve
                 }
                 sw.WriteLine("Integration.AbsError.Ended");
             }
-            toolStripStatusLabel1.Text = $"Saved: {saveBsTargetPointsPath}";
+            UpdateStatusText($"Saved: {saveBsTargetPointsPath}");
         }
+        #endregion
+
+        private void toolStripTextBoxIdxH_TextChanged(object sender, EventArgs e)
+        {
+            string hStr = toolStripTextBoxIdxH.Text;
+            int hInt;
+            if (int.TryParse(hStr, out hInt) == false)
+            {
+                MessageBox.Show($"Invalid h value: '{hStr}'.", "Information",
+                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+            if (_cc.h == hInt)
+            {
+                UpdateStatusText($"Index number h not changed, still {hInt}.");
+            }
+            else
+            {
+                var oldVal = _cc.h;
+                _cc.h = hInt;
+                UpdateStatusText($"Index number h has changed from {oldVal} to: {hInt}. " +
+                    $"It will take effect when draw graph again.");
+            }
+        }
+
     }//class
 }

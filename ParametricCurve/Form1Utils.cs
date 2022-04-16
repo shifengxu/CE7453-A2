@@ -31,5 +31,12 @@ namespace ParametricCurve
             }
             return points;
         }
+
+        private void UpdateStatusText(string msg)
+        {
+            toolStripStatusLabel1.Text = msg;
+            toolStripStatusLabel1.BackColor = Color.Pink;
+            statusLabelTimer.Start();
+        }
     }
 }

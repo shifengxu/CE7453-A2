@@ -9,7 +9,7 @@ namespace CurveLib
      */
     public class CurveCanvas
     {
-        private readonly int h = 46; // student index of Xu Shifeng on CE7453
+        public int h = 46; // student index of Xu Shifeng on CE7453
 
         private readonly List<(double X, double Y)> points = new List<(double X, double Y)>();
 

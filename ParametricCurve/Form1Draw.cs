@@ -66,8 +66,6 @@ namespace ParametricCurve
                 valueY--;
                 panelY = _cc.RealY2CanvasY(valueY, targetRatioY);
             }
-            textBoxXScale.Text = $"{_cc.TargetRatioX,5:N2}".Replace(".00", "");
-            textBoxYScale.Text = $"{_cc.TargetRatioY,5:N2}".Replace(".00", "");
         }
 
         // ******************************************************************** drawCurve()
@@ -450,7 +448,6 @@ namespace ParametricCurve
             {
                 var newX = X;
                 changeX = (double)newX / _scaleXMouseDownValue;
-                textBoxXScale.Text = $"{_cc.TargetRatioX * changeX,5:N2}".Replace(".00", "");
                 needRedraw = true;
             }
             if (_scaleYFlag && _scaleYMouseDownValue != 0)
@@ -458,7 +455,6 @@ namespace ParametricCurve
                 var newY = panel1.Height - Y;
                 var oldY = panel1.Height - _scaleYMouseDownValue;
                 changeY = (double)newY / oldY;
-                textBoxYScale.Text = $"{_cc.TargetRatioY * changeY,5:N2}".Replace(".00", "");
                 needRedraw = true;
             }
             if (needRedraw)
