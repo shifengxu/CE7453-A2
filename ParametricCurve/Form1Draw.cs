@@ -1,5 +1,7 @@
-﻿using System;
+﻿using CurveLib;
+using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -220,6 +222,172 @@ namespace ParametricCurve
                 prevPanelX = currPanelX;
                 prevPanelY = currPanelY;
             }
+        }
+
+        private void DrawIntgrCompositeTrapezoid(List<(double X, double Y)> gridPoints)
+        {
+            int pht = _cc.CanvasHeight;
+            int prevPanelX = _cc.RealX2CanvasX(gridPoints[0].X);
+            int prevPanelY = pht - _cc.RealY2CanvasY(gridPoints[0].Y);
+            int panelY0 = pht - _cc.RealY2CanvasY(0);
+            Point prevP0 = new Point(prevPanelX, panelY0);
+            Point prevP1 = new Point(prevPanelX, prevPanelY);
+
+            Pen pen4Line = new Pen(Color.Green, 1);
+            _g.DrawLine(pen4Line, prevPanelX, panelY0, prevPanelX, prevPanelY);
+            Brush brush4Dot = new SolidBrush(Color.Green);
+            _g.FillEllipse(brush4Dot, prevPanelX - 4, panelY0 - 4, 8, 8);
+
+            Color cBgTransparent = Color.FromArgb(0, 0, 0, 0); // transparent background
+            HatchBrush hBrush = new HatchBrush(HatchStyle.DashedHorizontal, Color.Green, cBgTransparent);
+
+            for (int i = 1; i < gridPoints.Count; i++)
+            {
+                int currPanelX = _cc.RealX2CanvasX(gridPoints[i].X);
+                int currPanelY = pht - _cc.RealY2CanvasY(gridPoints[i].Y);
+                _g.DrawLine(pen4Line, currPanelX, panelY0, currPanelX, currPanelY);
+                _g.FillEllipse(brush4Dot, currPanelX - 4, panelY0 - 4, 8, 8);
+
+                Point currP0 = new Point(currPanelX, panelY0);
+                Point currP1 = new Point(currPanelX, currPanelY);
+                _g.FillPolygon(hBrush, new Point[] { prevP0, prevP1, currP1, currP0 });
+                prevP0 = currP0;
+                prevP1 = currP1;
+            }
+        }
+
+        private void DrawIntgrCompositeSimpson(List<(double X, double Y)> gridPoints)
+        {
+            int pht = _cc.CanvasHeight;
+            double delta = (double)1 / _panel1SegCount; // should be 0.001
+
+            Pen pen4Curve = new Pen(Color.Red, 2);
+            double realX = gridPoints[0].X;
+            double realY = gridPoints[0].Y;
+            int prevPanelX = _cc.RealX2CanvasX(realX);
+            int prevPanelY = pht - _cc.RealY2CanvasY(realY);
+
+            // draw vertical lines
+            Pen pen4Line = new Pen(Color.Red, 1);
+            Brush brush4Dot = new SolidBrush(Color.Red);
+            var panelYAxis0 = pht - _cc.RealY2CanvasY(0);
+            _g.DrawLine(pen4Line, prevPanelX, panelYAxis0, prevPanelX, prevPanelY);
+            _g.FillEllipse(brush4Dot, prevPanelX - 4, panelYAxis0 - 4, 8, 8);
+
+            Color cBgTransparent = Color.FromArgb(0, 0, 0, 0); // transparent background
+            HatchBrush hBrush = new HatchBrush(HatchStyle.DashedVertical, Color.Red, cBgTransparent);
+
+            int currPanelX;
+            int currPanelY;
+            for (int i = 2; i < gridPoints.Count; i+=2)
+            {
+                var P0 = gridPoints[i - 2];
+                var P1 = gridPoints[i - 1];
+                var P2 = gridPoints[i];
+                for (realX = P0.X + delta; realX <= P2.X; realX += delta)
+                {
+                    realY = IntegrationEngine.LagrangeValueOrder2(realX, P0, P1, P2);
+                    currPanelX = _cc.RealX2CanvasX(realX);
+                    currPanelY = pht - _cc.RealY2CanvasY(realY);
+                    // draw Lagrange order 2 curve
+                    _g.DrawLine(pen4Curve, prevPanelX, prevPanelY, currPanelX, currPanelY);
+                    prevPanelX = currPanelX;
+                    prevPanelY = currPanelY;
+                }
+                // draw vertical lines
+                var panelX1 = _cc.RealX2CanvasX(P1.X);
+                var panelY1 = pht - _cc.RealY2CanvasY(P1.Y);
+                var panelX2 = _cc.RealX2CanvasX(P2.X);
+                var panelY2 = pht - _cc.RealY2CanvasY(P2.Y);
+                _g.DrawLine(pen4Line, panelX1, panelYAxis0, panelX1, panelY1);
+                _g.DrawLine(pen4Line, panelX2, panelYAxis0, panelX2, panelY2);
+                _g.FillEllipse(brush4Dot, panelX1 - 4, panelYAxis0 - 4, 8, 8);
+                _g.FillEllipse(brush4Dot, panelX2 - 4, panelYAxis0 - 4, 8, 8);
+
+                // draw rectangle for the Simpson area
+                DrawCompositeSimpsonRects(P0, P1, P2, panelYAxis0, hBrush);
+            }
+        }
+
+        private void DrawIntgrGaussianQuadrature(List<(double x, double y, double weight)> xywList, double minX, double maxX)
+        {
+            int pht = _cc.CanvasHeight;
+            Color cBgTransparent = Color.FromArgb(0, 0, 0, 0); // transparent background
+            HatchBrush hBrush = new HatchBrush(HatchStyle.DashedVertical, Color.YellowGreen, cBgTransparent);
+
+            Pen pen4Line = new Pen(Color.YellowGreen, 2);
+            Brush brush4Dot = new SolidBrush(Color.YellowGreen);
+
+            // the weight sum should be the X-axis length: maxX - minX
+            // so when calculating the x value, we can just use: minX + wAccu
+            double wAccu = 0; // weight accumulation
+            int prevPanelX = _cc.RealX2CanvasX(minX);
+            int panelY0 = pht - _cc.RealY2CanvasY(0);
+            foreach (var (x, y, weight) in xywList)
+            {
+                // draw line
+                int currPanelX = _cc.RealX2CanvasX(x);
+                int currPanelY = pht - _cc.RealY2CanvasY(y);
+                _g.DrawLine(pen4Line, currPanelX, panelY0, currPanelX, currPanelY);
+
+                // draw dot
+                _g.FillEllipse(brush4Dot, currPanelX - 4, panelY0 - 4, 8, 8);
+
+                // draw rectangle
+                wAccu += weight;
+                currPanelX = _cc.RealX2CanvasX(minX + wAccu);
+                int w = currPanelX - prevPanelX;
+                int h = panelY0 - currPanelY;
+                DrawIntgrGaussianQuadratureRect(hBrush, prevPanelX, currPanelY, w, h);
+                prevPanelX = currPanelX;
+            }
+        }
+
+        private void DrawIntgrGaussianQuadratureRect(Brush brush, int panelX, int panelY, int w, int h)
+        {
+            if (h < 0)
+            {
+                h = -h;
+                panelY -= h;
+            }
+            Rectangle rect = new Rectangle(panelX, panelY, w, h);
+            _g.FillRectangle(brush, rect);
+        }
+
+        private void DrawCompositeSimpsonRects((double X, double Y) P0, (double X, double Y) P1,
+            (double X, double Y) P2, int panelYAxis0, Brush brush)
+        {
+            var pht = _cc.CanvasHeight;
+            var panelX0 = _cc.RealX2CanvasX(P0.X);
+            var panelY0 = pht - _cc.RealY2CanvasY(P0.Y);
+            var panelX1 = _cc.RealX2CanvasX(P1.X);
+            var panelY1 = pht - _cc.RealY2CanvasY(P1.Y);
+            var panelX2 = _cc.RealX2CanvasX(P2.X);
+            var panelY2 = pht - _cc.RealY2CanvasY(P2.Y);
+            int w = (panelX1 - panelX0) / 3;
+            int h = panelYAxis0 - panelY0;
+            DrawCompositeSimpsonRect(panelX0, panelY0, w, h, brush);
+
+            var panelX = panelX1 - (panelX1 - panelX0) * 2 / 3;
+            w = (panelX1 - panelX0) * 2 / 3 + (panelX2 - panelX1) * 2 / 3;
+            h = panelYAxis0 - panelY1;
+            DrawCompositeSimpsonRect(panelX, panelY1, w, h, brush);
+
+            panelX = panelX2 - (panelX2 - panelX1) / 3;
+            w = (panelX2 - panelX1) / 3;
+            h = panelYAxis0 - panelY2;
+            DrawCompositeSimpsonRect(panelX, panelY2, w, h, brush);
+        }
+
+        private void DrawCompositeSimpsonRect(int panelX, int panelY, int w, int h, Brush brush)
+        {
+            if (h < 0)
+            {
+                h = -h;
+                panelY -= h;
+            }
+            Rectangle rect = new Rectangle(panelX, panelY, w, h);
+            _g.FillRectangle(brush, rect);
         }
 
         private void DrawBspline()

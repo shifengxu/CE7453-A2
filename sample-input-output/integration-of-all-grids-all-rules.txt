@@ -1,0 +1,41 @@
+Grid.List.Count: 7
+
+# Force integration on all the 1000 points
+oriIntgr: 0.378327
+
+exprY: x(u)
+
+# Grid | Trapezoidal | Simpson | Gaussian Quadrature
+Integration.Start
+ 2 |  0.244904 |  4.405700 | -1.194689
+ 4 |  1.087592 | -0.064480 | -1.070178
+ 6 |  0.474816 |  0.851810 |  0.011393
+ 8 |  0.402813 |  0.238181 |  0.325434
+10 |  0.380681 |  0.404933 |  0.373405
+16 |  0.365854 |  0.378356 |  0.378351
+20 |  0.365130 |  0.378353 |  0.378350
+Integration.Ended
+
+# error of each integrations. It is: interpolated - force
+# Grid | Trapezoidal | Simpson | Gaussian Quadrature
+Integration.Error.Start
+ 2 | -0.133423 |  4.027372 | -1.573016
+ 4 |  0.709265 | -0.442807 | -1.448505
+ 6 |  0.096488 |  0.473483 | -0.366935
+ 8 |  0.024486 | -0.140146 | -0.052893
+10 |  0.002354 |  0.026606 | -0.004922
+16 | -0.012473 |  0.000029 |  0.000023
+20 | -0.013197 |  0.000025 |  0.000023
+Integration.Error.Ended
+
+# absolute error of each integrations. It is: abs(error)
+# Grid | Trapezoidal | Simpson | Gaussian Quadrature
+Integration.AbsError.Start
+ 2 |  0.133423 |  4.027372 |  1.573016
+ 4 |  0.709265 |  0.442807 |  1.448505
+ 6 |  0.096488 |  0.473483 |  0.366935
+ 8 |  0.024486 |  0.140146 |  0.052893
+10 |  0.002354 |  0.026606 |  0.004922
+16 |  0.012473 |  0.000029 |  0.000023
+20 |  0.013197 |  0.000025 |  0.000023
+Integration.AbsError.Ended

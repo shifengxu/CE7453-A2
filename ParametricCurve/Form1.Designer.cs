@@ -53,7 +53,12 @@
             this.uniform8PointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.uniform12PointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.uniform16PointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.saveCoefficientsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.integrationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveIntegrationResultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.textBoxPanel1XY = new System.Windows.Forms.TextBox();
             this.panelLegend = new System.Windows.Forms.Panel();
             this.buttonMoveGraph = new System.Windows.Forms.Button();
             this.buttonYScale = new System.Windows.Forms.Button();
@@ -97,8 +102,14 @@
             this.buttonExprFourier = new System.Windows.Forms.Button();
             this.labelSamplePoints = new System.Windows.Forms.Label();
             this.groupBoxCubic = new System.Windows.Forms.GroupBox();
-            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
-            this.saveCoefficientsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.groupBoxIntegration = new System.Windows.Forms.GroupBox();
+            this.comboBoxIntgrGrid = new System.Windows.Forms.ComboBox();
+            this.labelIntgrGrid = new System.Windows.Forms.Label();
+            this.buttonIntgr = new System.Windows.Forms.Button();
+            this.labelIntgrRule = new System.Windows.Forms.Label();
+            this.comboBoxIntgrMethod = new System.Windows.Forms.ComboBox();
+            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripSeparator();
+            this.saveAllGridForAllRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -110,6 +121,7 @@
             this.groupBoxBspline.SuspendLayout();
             this.groupBoxFourier.SuspendLayout();
             this.groupBoxCubic.SuspendLayout();
+            this.groupBoxIntegration.SuspendLayout();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -137,7 +149,8 @@
             this.samplePointsToolStripMenuItem,
             this.cubicPolynomialToolStripMenuItem,
             this.bSplineToolStripMenuItem,
-            this.fourierToolStripMenuItem});
+            this.fourierToolStripMenuItem,
+            this.integrationToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(6, 3, 0, 3);
@@ -234,26 +247,26 @@
             // saveTargetPointsToolStripMenuItem
             // 
             this.saveTargetPointsToolStripMenuItem.Name = "saveTargetPointsToolStripMenuItem";
-            this.saveTargetPointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.saveTargetPointsToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
             this.saveTargetPointsToolStripMenuItem.Text = "Save Target Points";
             this.saveTargetPointsToolStripMenuItem.Click += new System.EventHandler(this.saveTargetPointsToolStripMenuItem_Click);
             // 
             // loadTargetPointsToolStripMenuItem
             // 
             this.loadTargetPointsToolStripMenuItem.Name = "loadTargetPointsToolStripMenuItem";
-            this.loadTargetPointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.loadTargetPointsToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
             this.loadTargetPointsToolStripMenuItem.Text = "Load Target Points";
             this.loadTargetPointsToolStripMenuItem.Click += new System.EventHandler(this.loadTargetPointsToolStripMenuItem_Click);
             // 
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(221, 6);
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(216, 6);
             // 
             // saveBSplineDataToolStripMenuItem
             // 
             this.saveBSplineDataToolStripMenuItem.Name = "saveBSplineDataToolStripMenuItem";
-            this.saveBSplineDataToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.saveBSplineDataToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
             this.saveBSplineDataToolStripMenuItem.Text = "Save B-Spline Data";
             this.saveBSplineDataToolStripMenuItem.Click += new System.EventHandler(this.saveBSplineDataToolStripMenuItem_Click);
             // 
@@ -274,37 +287,65 @@
             // uniform4PointsToolStripMenuItem
             // 
             this.uniform4PointsToolStripMenuItem.Name = "uniform4PointsToolStripMenuItem";
-            this.uniform4PointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.uniform4PointsToolStripMenuItem.Size = new System.Drawing.Size(209, 26);
             this.uniform4PointsToolStripMenuItem.Text = "Uniform 4 Points";
             this.uniform4PointsToolStripMenuItem.Click += new System.EventHandler(this.uniform4PointsToolStripMenuItem_Click);
             // 
             // uniform6PointsToolStripMenuItem
             // 
             this.uniform6PointsToolStripMenuItem.Name = "uniform6PointsToolStripMenuItem";
-            this.uniform6PointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.uniform6PointsToolStripMenuItem.Size = new System.Drawing.Size(209, 26);
             this.uniform6PointsToolStripMenuItem.Text = "Uniform 6 Points";
             this.uniform6PointsToolStripMenuItem.Click += new System.EventHandler(this.uniform6PointsToolStripMenuItem_Click);
             // 
             // uniform8PointsToolStripMenuItem
             // 
             this.uniform8PointsToolStripMenuItem.Name = "uniform8PointsToolStripMenuItem";
-            this.uniform8PointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.uniform8PointsToolStripMenuItem.Size = new System.Drawing.Size(209, 26);
             this.uniform8PointsToolStripMenuItem.Text = "Uniform 8 Points";
             this.uniform8PointsToolStripMenuItem.Click += new System.EventHandler(this.uniform8PointsToolStripMenuItem_Click);
             // 
             // uniform12PointsToolStripMenuItem
             // 
             this.uniform12PointsToolStripMenuItem.Name = "uniform12PointsToolStripMenuItem";
-            this.uniform12PointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.uniform12PointsToolStripMenuItem.Size = new System.Drawing.Size(209, 26);
             this.uniform12PointsToolStripMenuItem.Text = "Uniform 12 Points";
             this.uniform12PointsToolStripMenuItem.Click += new System.EventHandler(this.uniform12PointsToolStripMenuItem_Click);
             // 
             // uniform16PointsToolStripMenuItem
             // 
             this.uniform16PointsToolStripMenuItem.Name = "uniform16PointsToolStripMenuItem";
-            this.uniform16PointsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.uniform16PointsToolStripMenuItem.Size = new System.Drawing.Size(209, 26);
             this.uniform16PointsToolStripMenuItem.Text = "Uniform 16 Points";
             this.uniform16PointsToolStripMenuItem.Click += new System.EventHandler(this.uniform16PointsToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(206, 6);
+            // 
+            // saveCoefficientsToolStripMenuItem
+            // 
+            this.saveCoefficientsToolStripMenuItem.Name = "saveCoefficientsToolStripMenuItem";
+            this.saveCoefficientsToolStripMenuItem.Size = new System.Drawing.Size(209, 26);
+            this.saveCoefficientsToolStripMenuItem.Text = "Save Coefficients";
+            this.saveCoefficientsToolStripMenuItem.Click += new System.EventHandler(this.saveCoefficientsToolStripMenuItem_Click);
+            // 
+            // integrationToolStripMenuItem
+            // 
+            this.integrationToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.saveIntegrationResultsToolStripMenuItem,
+            this.toolStripMenuItem4,
+            this.saveAllGridForAllRulesToolStripMenuItem});
+            this.integrationToolStripMenuItem.Name = "integrationToolStripMenuItem";
+            this.integrationToolStripMenuItem.Size = new System.Drawing.Size(96, 24);
+            this.integrationToolStripMenuItem.Text = "Integration";
+            // 
+            // saveIntegrationResultsToolStripMenuItem
+            // 
+            this.saveIntegrationResultsToolStripMenuItem.Name = "saveIntegrationResultsToolStripMenuItem";
+            this.saveIntegrationResultsToolStripMenuItem.Size = new System.Drawing.Size(261, 26);
+            this.saveIntegrationResultsToolStripMenuItem.Text = "Save Integration Results";
             // 
             // panel1
             // 
@@ -313,6 +354,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BackColor = System.Drawing.Color.White;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.panel1.Controls.Add(this.textBoxPanel1XY);
             this.panel1.Controls.Add(this.panelLegend);
             this.panel1.Cursor = System.Windows.Forms.Cursors.Cross;
             this.panel1.Location = new System.Drawing.Point(0, 28);
@@ -325,6 +367,19 @@
             this.panel1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseUp);
             this.panel1.Resize += new System.EventHandler(this.panel1_Resize);
             // 
+            // textBoxPanel1XY
+            // 
+            this.textBoxPanel1XY.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxPanel1XY.BackColor = System.Drawing.Color.White;
+            this.textBoxPanel1XY.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBoxPanel1XY.Location = new System.Drawing.Point(736, 621);
+            this.textBoxPanel1XY.Name = "textBoxPanel1XY";
+            this.textBoxPanel1XY.ReadOnly = true;
+            this.textBoxPanel1XY.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.textBoxPanel1XY.Size = new System.Drawing.Size(88, 20);
+            this.textBoxPanel1XY.TabIndex = 15;
+            this.textBoxPanel1XY.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
             // panelLegend
             // 
             this.panelLegend.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -336,6 +391,7 @@
             this.panelLegend.Controls.Add(this.textBoxXScale);
             this.panelLegend.Controls.Add(this.labelYScale);
             this.panelLegend.Controls.Add(this.labelXScale);
+            this.panelLegend.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.panelLegend.Location = new System.Drawing.Point(533, -1);
             this.panelLegend.Name = "panelLegend";
             this.panelLegend.Size = new System.Drawing.Size(293, 45);
@@ -564,9 +620,9 @@
             this.buttonSelectBs.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.buttonSelectBs.Location = new System.Drawing.Point(19, 22);
             this.buttonSelectBs.Name = "buttonSelectBs";
-            this.buttonSelectBs.Size = new System.Drawing.Size(88, 29);
+            this.buttonSelectBs.Size = new System.Drawing.Size(112, 29);
             this.buttonSelectBs.TabIndex = 23;
-            this.buttonSelectBs.Text = "Select";
+            this.buttonSelectBs.Text = "Select    ";
             this.buttonSelectBs.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.buttonSelectBs.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.toolTip1.SetToolTip(this.buttonSelectBs, "Select target points for B-Spline");
@@ -594,9 +650,9 @@
             // 
             // buttonDrawBs
             // 
-            this.buttonDrawBs.Location = new System.Drawing.Point(168, 23);
+            this.buttonDrawBs.Location = new System.Drawing.Point(152, 23);
             this.buttonDrawBs.Name = "buttonDrawBs";
-            this.buttonDrawBs.Size = new System.Drawing.Size(106, 28);
+            this.buttonDrawBs.Size = new System.Drawing.Size(122, 28);
             this.buttonDrawBs.TabIndex = 20;
             this.buttonDrawBs.Text = "Draw BSpline";
             this.buttonDrawBs.UseVisualStyleBackColor = true;
@@ -803,17 +859,89 @@
             this.groupBoxCubic.TabStop = false;
             this.groupBoxCubic.Text = "Cubic Polynomial";
             // 
-            // toolStripMenuItem2
+            // groupBoxIntegration
             // 
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(221, 6);
+            this.groupBoxIntegration.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxIntegration.Controls.Add(this.comboBoxIntgrGrid);
+            this.groupBoxIntegration.Controls.Add(this.labelIntgrGrid);
+            this.groupBoxIntegration.Controls.Add(this.buttonIntgr);
+            this.groupBoxIntegration.Controls.Add(this.labelIntgrRule);
+            this.groupBoxIntegration.Controls.Add(this.comboBoxIntgrMethod);
+            this.groupBoxIntegration.Location = new System.Drawing.Point(837, 571);
+            this.groupBoxIntegration.Name = "groupBoxIntegration";
+            this.groupBoxIntegration.Size = new System.Drawing.Size(283, 104);
+            this.groupBoxIntegration.TabIndex = 19;
+            this.groupBoxIntegration.TabStop = false;
+            this.groupBoxIntegration.Text = "Integration";
             // 
-            // saveCoefficientsToolStripMenuItem
+            // comboBoxIntgrGrid
             // 
-            this.saveCoefficientsToolStripMenuItem.Name = "saveCoefficientsToolStripMenuItem";
-            this.saveCoefficientsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
-            this.saveCoefficientsToolStripMenuItem.Text = "Save Coefficients";
-            this.saveCoefficientsToolStripMenuItem.Click += new System.EventHandler(this.saveCoefficientsToolStripMenuItem_Click);
+            this.comboBoxIntgrGrid.FormattingEnabled = true;
+            this.comboBoxIntgrGrid.Items.AddRange(new object[] {
+            "2",
+            "4",
+            "6",
+            "8",
+            "10",
+            "16",
+            "20"});
+            this.comboBoxIntgrGrid.Location = new System.Drawing.Point(47, 67);
+            this.comboBoxIntgrGrid.Name = "comboBoxIntgrGrid";
+            this.comboBoxIntgrGrid.Size = new System.Drawing.Size(84, 28);
+            this.comboBoxIntgrGrid.TabIndex = 23;
+            // 
+            // labelIntgrGrid
+            // 
+            this.labelIntgrGrid.AutoSize = true;
+            this.labelIntgrGrid.Location = new System.Drawing.Point(6, 70);
+            this.labelIntgrGrid.Name = "labelIntgrGrid";
+            this.labelIntgrGrid.Size = new System.Drawing.Size(40, 20);
+            this.labelIntgrGrid.TabIndex = 22;
+            this.labelIntgrGrid.Text = "Grid:";
+            // 
+            // buttonIntgr
+            // 
+            this.buttonIntgr.Location = new System.Drawing.Point(152, 66);
+            this.buttonIntgr.Name = "buttonIntgr";
+            this.buttonIntgr.Size = new System.Drawing.Size(121, 28);
+            this.buttonIntgr.TabIndex = 21;
+            this.buttonIntgr.Text = "Integrate";
+            this.buttonIntgr.UseVisualStyleBackColor = true;
+            this.buttonIntgr.Click += new System.EventHandler(this.buttonIntgr_Click);
+            // 
+            // labelIntgrRule
+            // 
+            this.labelIntgrRule.AutoSize = true;
+            this.labelIntgrRule.Location = new System.Drawing.Point(6, 29);
+            this.labelIntgrRule.Name = "labelIntgrRule";
+            this.labelIntgrRule.Size = new System.Drawing.Size(41, 20);
+            this.labelIntgrRule.TabIndex = 1;
+            this.labelIntgrRule.Text = "Rule:";
+            // 
+            // comboBoxIntgrMethod
+            // 
+            this.comboBoxIntgrMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxIntgrMethod.FormattingEnabled = true;
+            this.comboBoxIntgrMethod.Items.AddRange(new object[] {
+            "CompositeTrapezoidal",
+            "Composite Simpson",
+            "Gaussian Quadrature"});
+            this.comboBoxIntgrMethod.Location = new System.Drawing.Point(47, 26);
+            this.comboBoxIntgrMethod.Name = "comboBoxIntgrMethod";
+            this.comboBoxIntgrMethod.Size = new System.Drawing.Size(226, 28);
+            this.comboBoxIntgrMethod.TabIndex = 0;
+            // 
+            // toolStripMenuItem4
+            // 
+            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(258, 6);
+            // 
+            // saveAllGridForAllRulesToolStripMenuItem
+            // 
+            this.saveAllGridForAllRulesToolStripMenuItem.Name = "saveAllGridForAllRulesToolStripMenuItem";
+            this.saveAllGridForAllRulesToolStripMenuItem.Size = new System.Drawing.Size(261, 26);
+            this.saveAllGridForAllRulesToolStripMenuItem.Text = "Save All Grid for All Rules";
+            this.saveAllGridForAllRulesToolStripMenuItem.Click += new System.EventHandler(this.saveAllGridForAllRulesToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -821,6 +949,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
             this.ClientSize = new System.Drawing.Size(1271, 720);
+            this.Controls.Add(this.groupBoxIntegration);
             this.Controls.Add(this.groupBoxCubic);
             this.Controls.Add(this.labelSamplePoints);
             this.Controls.Add(this.groupBoxFourier);
@@ -841,6 +970,7 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.panelLegend.ResumeLayout(false);
             this.panelLegend.PerformLayout();
             this.panelExprX.ResumeLayout(false);
@@ -855,6 +985,8 @@
             this.groupBoxFourier.ResumeLayout(false);
             this.groupBoxCubic.ResumeLayout(false);
             this.groupBoxCubic.PerformLayout();
+            this.groupBoxIntegration.ResumeLayout(false);
+            this.groupBoxIntegration.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -931,5 +1063,16 @@
         private ToolStripMenuItem uniform6PointsToolStripMenuItem;
         private ToolStripSeparator toolStripMenuItem2;
         private ToolStripMenuItem saveCoefficientsToolStripMenuItem;
+        private GroupBox groupBoxIntegration;
+        private ComboBox comboBoxIntgrMethod;
+        private Label labelIntgrRule;
+        private Button buttonIntgr;
+        private ComboBox comboBoxIntgrGrid;
+        private Label labelIntgrGrid;
+        private TextBox textBoxPanel1XY;
+        private ToolStripMenuItem integrationToolStripMenuItem;
+        private ToolStripMenuItem saveIntegrationResultsToolStripMenuItem;
+        private ToolStripSeparator toolStripMenuItem4;
+        private ToolStripMenuItem saveAllGridForAllRulesToolStripMenuItem;
     }
 }

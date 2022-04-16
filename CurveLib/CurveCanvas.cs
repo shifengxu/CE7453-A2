@@ -59,28 +59,6 @@ namespace CurveLib
             return res;
         }
 
-        private (double X, double Y) CalcPoint(double u)
-        {
-            var x = CalcX(u);
-            var y = CalcY(u);
-            return (x, y);
-        }
-
-        public List<(double X, double Y)> CalcCurve(int segmentCount = 1000)
-        {
-            points.Clear();
-            var p0 = CalcPoint(0);
-            points.Add(p0);
-
-            for(int i = 1; i <= segmentCount; i++)
-            {
-                var p = CalcPoint((double)i / segmentCount);
-                points.Add(p);
-            }
-            //UpdateCanvasSize(CanvasWidth, CanvasHeight);
-            return points;
-        }
-
         #region CalcCurveByType
         public double CalcValueByType(string type, double u)
         {
@@ -138,41 +116,6 @@ namespace CurveLib
         }
         #endregion
 
-        #region CalcCurveByExpr()
-        //public List<CurveCanvasPoint> CalcCurveByExpr(string exprX, string exprY, int segmentCount = 1000)
-        //{
-        //    var p0 = CalcPointByExpr(0, exprX, exprY);
-        //    p0.index = 0;
-        //    _minX = _maxX = p0.X;
-        //    _minY = _maxY = p0.Y;
-
-        //    points.Clear();
-        //    points.Add(p0);
-
-        //    for (int i = 1; i <= segmentCount; i++)
-        //    {
-        //        var p = CalcPointByExpr((double)i / segmentCount, exprX, exprY);
-        //        p.index = i;
-        //        _minX = Math.Min(p.X, _minX);
-        //        _minY = Math.Min(p.Y, _minY);
-        //        _maxX = Math.Max(p.X, _maxX);
-        //        _maxY = Math.Max(p.Y, _maxY);
-        //        points.Add(p);
-        //    }
-        //    //UpdateCanvasSize(CanvasWidth, CanvasHeight);
-        //    return points;
-        //}
-
-        //private CurveCanvasPoint CalcPointByExpr(double u, string exprX, string exprY)
-        //{
-        //    exprX = $"double u = {u};\r\n" + exprX;
-        //    exprY = $"double u = {u};\r\n" + exprY;
-        //    double x = (double)CSharpScript.EvaluateAsync(exprX).Result;
-        //    double y = (double)CSharpScript.EvaluateAsync(exprY).Result;
-        //    return new CurveCanvasPoint(0, x, y);
-        //}
-        #endregion
-
         public void UpdateSizeMarginRatio(int width, int height)
         {
             _canvasWidth = width;
@@ -209,6 +152,7 @@ namespace CurveLib
             CanvasMarginY = (int)(-minY * TargetRatioY + 0.1 * _canvasHeight);
         }
 
+        #region Real value <=> Canvas value
         public int RealX2CanvasX(double x, double? targetRatioX = null)
         {
             if (targetRatioX == null)
@@ -240,6 +184,7 @@ namespace CurveLib
 
             return (double)(y - CanvasMarginY) / targetRatioY.Value;
         }
+        #endregion
 
     }
 }

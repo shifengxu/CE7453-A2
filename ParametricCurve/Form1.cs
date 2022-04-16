@@ -36,6 +36,9 @@ namespace ParametricCurve
         // Fourier
         private FourierEngine _fourierEngine = new FourierEngine("Temp");
 
+        // Integration
+        private IntegrationEngine _intgrEngine = new IntegrationEngine();
+
         private readonly SolidBrush _brush4SamplePoint = new SolidBrush(Color.Green);
         private readonly Pen[] _pen4CurveArr = new Pen[]
         {
@@ -52,6 +55,7 @@ namespace ParametricCurve
 
         private readonly Timer panel1ResizeTimer = new Timer();
         private readonly Timer panel1InitTimer = new Timer();
+        private readonly Timer statusLabelTimer = new Timer();
 
         private int _panel1CurveCount = 0; // it is 0 before click "plot curve" button.
 
@@ -66,6 +70,10 @@ namespace ParametricCurve
             panel1ResizeTimer.Tick += new EventHandler(panel1ResizeTimerTick);
             panel1ResizeTimer.Enabled = false;
 
+            statusLabelTimer.Interval = 3000;
+            statusLabelTimer.Tick += new EventHandler((o, e) => toolStripStatusLabel1.BackColor = Color.White);
+            statusLabelTimer.Enabled = false;
+
             comboBoxX.Items.Add("x(u)");
             comboBoxX.Items.Add("y(u)");
             comboBoxX.Items.Add("u");
@@ -74,6 +82,9 @@ namespace ParametricCurve
             comboBoxY.Items.Add("y(u)");
             comboBoxY.Items.Add("u");
             comboBoxY.SelectedIndex = 1;
+
+            comboBoxIntgrMethod.SelectedIndex = 1;
+            comboBoxIntgrGrid.SelectedIndex = 3;
 
             listBoxPoints.OnListChanged += PointListChanged;
 
@@ -165,9 +176,9 @@ namespace ParametricCurve
         {
             double x2 = _cc.CanvasX2RealX(e.X);
             double y2 = _cc.CanvasY2RealY(_cc.CanvasHeight - e.Y);
-            string x2Str = x2.ToString("N", CultureInfo.InvariantCulture);
-            string y2Str = y2.ToString("N", CultureInfo.InvariantCulture);
-            this.toolStripStatusLabel1.Text = $"{x2Str} {y2Str}";
+            string x2Str = x2.ToString("N3", CultureInfo.InvariantCulture);
+            string y2Str = y2.ToString("N3", CultureInfo.InvariantCulture);
+            textBoxPanel1XY.Text = $"{x2Str} {y2Str}";
 
             if (panel1.Cursor == Cursors.Cross)
             {
@@ -772,11 +783,16 @@ namespace ParametricCurve
             int minCnt = 10;
             if (listBoxPoints.Items.Count < minCnt)
             {
-                MessageBox.Show($"BSpline: you need to select {minCnt} target point at least.",
+                var msg = $"BSpline:Better to use {minCnt} target points or more.\r\n\r\nContinue?";
+                DialogResult res = MessageBox.Show(msg,
                     "Information",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
-                return;
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button1);
+                if (res == DialogResult.No)
+                {
+                    return;
+                }
             }
             _bspline.TargetPoints.Clear();
             _bspline.TargetPoints.AddRange(listBoxPoints.Points);
@@ -854,6 +870,7 @@ namespace ParametricCurve
         #endregion
 
         // ******************************************************************** Fourier
+        #region Fourier
         private void buttonDrawFourier_Click(object sender, EventArgs e)
         {
             if (listBoxPoints.Items.Count < 4)
@@ -982,5 +999,181 @@ namespace ParametricCurve
             _cc.ExpressionFourierX.Save(this.saveBsTargetPointsPath, false);
             _cc.ExpressionFourierY.Save(this.saveBsTargetPointsPath, true);
         }
-    }
+        #endregion
+
+        private void buttonIntgr_Click(object sender, EventArgs e)
+        {
+            string msg = String.Empty;
+            if (_panel1CurveCount <= 0 || _curvePoints.Count == 0)
+            {
+                msg = "Please plot curve first.";
+                MessageBox.Show(msg, "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+            if ((string)comboBoxX.SelectedItem != "u")
+            {
+                msg = "The Horizontal axis expression is not \"u\". The integration may not match the curve.";
+                MessageBox.Show(msg, "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+            int gridCnt;
+            string gridStr = comboBoxIntgrGrid.Text;
+            if (int.TryParse(gridStr, out gridCnt) == false)
+            {
+                MessageBox.Show($"Invalid grid value: {comboBoxIntgrGrid.Text}",
+                    "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+            if (comboBoxIntgrMethod.SelectedIndex == 1 && gridCnt % 2 != 0)
+            {
+                MessageBox.Show($"grid count should be even number for Simpson's Rule.",
+                    "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+
+            double oriIntgr = IntegrationEngine.ForceIntegration(_curvePoints);
+            if (comboBoxIntgrMethod.SelectedIndex == 1) // Composite Simpson
+            {
+                List<(double X, double Y)> gridPoints = CompositeGridPoints(gridCnt);
+                double smpIntgr = _intgrEngine.ByCompositeSimpson(gridPoints);
+                msg = $"Origin integration: {oriIntgr:N6};  " +
+                    $"Simpson's integration: {smpIntgr:N6};  " +
+                    $"Error: {smpIntgr - oriIntgr:N6}";
+
+                DrawIntgrCompositeSimpson(gridPoints);
+            }
+            else if (comboBoxIntgrMethod.SelectedIndex == 0) // Composite Trapezoidal
+            {
+                List<(double X, double Y)> gridPoints = CompositeGridPoints(gridCnt);
+                double trpIntgr = _intgrEngine.ByCompositeTrapezoid(gridPoints);
+                msg = $"Origin integration: {oriIntgr:N6};  " +
+                    $"Trapezoid integration: {trpIntgr:N6};  " +
+                    $"Error: {trpIntgr - oriIntgr:N6}";
+
+                DrawIntgrCompositeTrapezoid(gridPoints);
+            }
+            else if (comboBoxIntgrMethod.SelectedIndex == 2) // Gaussian Quadrature
+            {
+                GaussianQuadratureCoef gqCoef;
+                try
+                {
+                    gqCoef = GaussianQuadratureCoef.Get(gridCnt);
+                }catch (ArgumentException ae)
+                {
+                    MessageBox.Show($"{ae.Message}", "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return;
+                }
+                string exprY = (string)comboBoxY.SelectedItem;
+                IntegrationEngine.CalcValue cvd = u => _cc.CalcValueByType(exprY, u);
+                List<(double x, double y, double weight)> weightList;
+                double minX = 0, maxX = 1;
+                double gqIntgr = _intgrEngine.ByGaussianQuadrature(gqCoef, cvd, out weightList, minX, maxX);
+                msg = $"Origin integration: {oriIntgr:N6};  " +
+                   $"Gaussian Quadrature integration: {gqIntgr:N6};  " +
+                   $"Error: {gqIntgr - oriIntgr:N6}";
+
+                DrawIntgrGaussianQuadrature(weightList, minX, maxX);
+            }
+            toolStripStatusLabel1.Text = msg;
+            toolStripStatusLabel1.BackColor = Color.Pink;
+            statusLabelTimer.Start();
+        }
+
+        private void saveAllGridForAllRulesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if ((string)comboBoxX.SelectedItem != "u")
+            {
+                var msg = "The Horizontal axis expression is not \"u\". The integration may not match the curve.";
+                MessageBox.Show(msg, "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.InitialDirectory = this.saveBsTargetPointsPath;
+                sfd.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                sfd.FilterIndex = 2;
+                sfd.RestoreDirectory = true;
+                sfd.FileName = "integration-of-all-grids-all-rules.txt";
+                if (sfd.ShowDialog() != DialogResult.OK)
+                    return;
+                this.saveBsTargetPointsPath = sfd.FileName;
+            }
+
+            double oriIntgr = IntegrationEngine.ForceIntegration(_curvePoints);
+            var res = new List<(int gc, double trp, double smp, double gsq)>();
+            string exprY = (string)comboBoxY.SelectedItem;
+            IntegrationEngine.CalcValue cvd = u => _cc.CalcValueByType(exprY, u);
+            List<(double x, double y, double weight)> weightList;
+            foreach (var gridItem in comboBoxIntgrGrid.Items)
+            {
+                string gridStr = (string)gridItem;
+                int gridCnt;
+                if (int.TryParse(gridStr, out gridCnt) == false)
+                    continue;
+                string msg = $"Integrating for grid {gridStr}...";
+                toolStripStatusLabel1.Text = msg;
+
+                List<(double X, double Y)> gridPoints = CompositeGridPoints(gridCnt);
+                var intgrTrp = _intgrEngine.ByCompositeTrapezoid(gridPoints);
+
+                var intgrSmp = _intgrEngine.ByCompositeSimpson(gridPoints);
+
+                double intgrGsq;
+                try
+                {
+                    var gqCoef = GaussianQuadratureCoef.Get(gridCnt);
+                    intgrGsq = _intgrEngine.ByGaussianQuadrature(gqCoef, cvd, out weightList, 0, 1);
+                }
+                catch (ArgumentException)
+                {
+                    intgrGsq =  -10000; // -10000 means error
+                }
+                res.Add((gridCnt, intgrTrp, intgrSmp, intgrGsq));
+                toolStripStatusLabel1.Text = msg + " Done";
+            }//foreach
+
+            using (StreamWriter sw = new StreamWriter(this.saveBsTargetPointsPath))
+            {
+                sw.WriteLine($"Grid.List.Count: {res.Count}");
+                sw.WriteLine();
+                sw.WriteLine($"# Force integration on all the {_panel1SegCount} points");
+                sw.WriteLine($"oriIntgr: {oriIntgr:N6}");
+                sw.WriteLine();
+                sw.WriteLine($"exprY: {exprY}");
+                sw.WriteLine();
+                sw.WriteLine("# Grid | Trapezoidal | Simpson | Gaussian Quadrature");
+                sw.WriteLine("Integration.Start");
+                foreach (var r in res)
+                {
+                    sw.WriteLine($"{r.gc,2} | {r.trp,9:N6} | {r.smp,9:N6} | {r.gsq,9:N6}");
+                }
+                sw.WriteLine("Integration.Ended");
+
+                sw.WriteLine();
+                sw.WriteLine("# error of each integrations. It is: interpolated - force");
+                sw.WriteLine("# Grid | Trapezoidal | Simpson | Gaussian Quadrature");
+                sw.WriteLine("Integration.Error.Start");
+                foreach (var r in res)
+                {
+                    sw.WriteLine($"{r.gc,2} | {r.trp - oriIntgr,9:N6} | {r.smp - oriIntgr,9:N6} | {r.gsq - oriIntgr,9:N6}");
+                }
+                sw.WriteLine("Integration.Error.Ended");
+
+                sw.WriteLine();
+                sw.WriteLine("# absolute error of each integrations. It is: abs(error)");
+                sw.WriteLine("# Grid | Trapezoidal | Simpson | Gaussian Quadrature");
+                sw.WriteLine("Integration.AbsError.Start");
+                foreach (var r in res)
+                {
+                    var absTrp = Math.Abs(r.trp - oriIntgr);
+                    var absSmp = Math.Abs(r.smp - oriIntgr);
+                    var absGsq = Math.Abs(r.gsq - oriIntgr);
+                    sw.WriteLine($"{r.gc,2} | {absTrp,9:N6} | {absSmp,9:N6} | {absGsq,9:N6}");
+                }
+                sw.WriteLine("Integration.AbsError.Ended");
+            }
+            toolStripStatusLabel1.Text = $"Saved: {saveBsTargetPointsPath}";
+        }
+    }//class
 }
