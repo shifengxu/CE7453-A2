@@ -30,10 +30,10 @@ We implemented 3 kinds of integration:
 
 ![](./images/intgr-simpson.png)
 
-### Integration of all rule with 6 grids
+### Integration of all rules with 6 grids
 
 ![](./images/intgr-grid6-all.png)
 
-### Integration of all rule with 16 grids
+### Integration of all rules with 16 grids
 
 ![](./images/intgr-grid16-all.png)
