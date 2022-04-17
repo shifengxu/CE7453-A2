@@ -464,6 +464,7 @@
             this.panelLegend.Controls.Add(this.buttonMoveGraph);
             this.panelLegend.Controls.Add(this.buttonYScale);
             this.panelLegend.Controls.Add(this.buttonXScale);
+            this.panelLegend.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.panelLegend.Location = new System.Drawing.Point(707, -1);
             this.panelLegend.Name = "panelLegend";
             this.panelLegend.Size = new System.Drawing.Size(119, 45);
