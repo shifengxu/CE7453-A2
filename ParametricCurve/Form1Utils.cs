@@ -34,8 +34,9 @@ namespace ParametricCurve
 
         private void UpdateStatusText(string msg)
         {
+            statusLabelTimer.Stop();
             toolStripStatusLabel1.Text = msg;
-            toolStripStatusLabel1.BackColor = Color.Pink;
+            toolStripStatusLabel1.BackColor = Color.Yellow;
             statusLabelTimer.Start();
         }
     }

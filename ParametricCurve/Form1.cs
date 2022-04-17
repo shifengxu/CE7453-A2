@@ -132,12 +132,12 @@ namespace ParametricCurve
                         this.saveSamplePointsPath = val;
                         break;
                     default:
-                        this.toolStripStatusLabel1.Text = $"Unknown key {key} from config file {this.initCfgFilePath}";
+                        UpdateStatusText($"Unknown key {key} from config file {this.initCfgFilePath}");
                         return;
                 }
                 configCount++;
             }
-            this.toolStripStatusLabel1.Text = $"Initilized {configCount} item(s) from config file {this.initCfgFilePath}";
+            UpdateStatusText($"Initilized {configCount} item(s) from config file {this.initCfgFilePath}");
 
             panel1InitTimer.Interval = 1000;
             panel1InitTimer.Tick += new EventHandler(panel1InitTimerTick);
@@ -517,7 +517,7 @@ namespace ParametricCurve
             }
             else
             {
-                toolStripStatusLabel1.Text = $"Can not parse '{textBoxU.Text}' as double for u value.";
+                UpdateStatusText($"Can not parse '{textBoxU.Text}' as double for u value.");
             }
         }
 
@@ -1004,17 +1004,15 @@ namespace ParametricCurve
         private void buttonIntgr_Click(object sender, EventArgs e)
         {
             string msg = String.Empty;
-            if (_panel1CurveCount <= 0 || _curvePoints.Count == 0)
-            {
-                msg = "Please plot curve first.";
-                MessageBox.Show(msg, "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                return;
-            }
             if ((string)comboBoxX.SelectedItem != "u")
             {
                 msg = "The Horizontal axis expression is not \"u\". The integration may not match the curve.";
                 MessageBox.Show(msg, "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
+            }
+            if (_panel1CurveCount <= 0 || _curvePoints.Count == 0)
+            {
+                buttonPlotCurve_Click(sender, e);
             }
             int gridCnt;
             string gridStr = comboBoxIntgrGrid.Text;
@@ -1110,7 +1108,7 @@ namespace ParametricCurve
                 if (int.TryParse(gridStr, out gridCnt) == false)
                     continue;
                 string msg = $"Integrating for grid {gridStr}...";
-                toolStripStatusLabel1.Text = msg;
+                UpdateStatusText(msg);
 
                 List<(double X, double Y)> gridPoints = CompositeGridPoints(gridCnt);
                 var intgrTrp = _intgrEngine.ByCompositeTrapezoid(gridPoints);
@@ -1128,7 +1126,7 @@ namespace ParametricCurve
                     intgrGsq =  -10000; // -10000 means error
                 }
                 res.Add((gridCnt, intgrTrp, intgrSmp, intgrGsq));
-                toolStripStatusLabel1.Text = msg + " Done";
+                UpdateStatusText(msg + " Done");
             }//foreach
 
             using (StreamWriter sw = new StreamWriter(this.saveBsTargetPointsPath))
@@ -1139,6 +1137,9 @@ namespace ParametricCurve
                 sw.WriteLine($"oriIntgr: {oriIntgr:N6}");
                 sw.WriteLine();
                 sw.WriteLine($"exprY: {exprY}");
+                sw.WriteLine();
+                sw.WriteLine($"ExprOffsetX: {_cc.ExprOffsetX}");
+                sw.WriteLine($"ExprOffsetY: {_cc.ExprOffsetY}");
                 sw.WriteLine();
                 sw.WriteLine("# Grid | Trapezoidal | Simpson | Gaussian Quadrature");
                 sw.WriteLine("Integration.Start");
@@ -1198,5 +1199,51 @@ namespace ParametricCurve
             }
         }
 
+        private void toolStripTextBoxExprOffsetX_TextChanged(object sender, EventArgs e)
+        {
+            string offsetStr = toolStripTextBoxExprOffsetX.Text;
+            double offsetVal;
+            if (double.TryParse(offsetStr, out offsetVal) == false)
+            {
+                MessageBox.Show($"Invalid offset value: '{offsetStr}'.", "Information",
+                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+            if (_cc.ExprOffsetX == offsetVal)
+            {
+                UpdateStatusText($"Expression x(u) offset not changed, still {offsetVal}.");
+            }
+            else
+            {
+                var oldVal = _cc.ExprOffsetX;
+                _cc.ExprOffsetX = offsetVal;
+                UpdateStatusText($"Expression x(u) offset has changed from {oldVal} to: {offsetVal}. " +
+                    $"It will take effect when draw graph again.");
+            }
+        }
+
+        private void toolStripTextBoxExprOffsetY_TextChanged(object sender, EventArgs e)
+        {
+            string offsetStr = toolStripTextBoxExprOffsetY.Text;
+            double offsetVal;
+            if (double.TryParse(offsetStr, out offsetVal) == false)
+            {
+                MessageBox.Show($"Invalid offset value: '{offsetStr}'.", "Information",
+                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+            if (_cc.ExprOffsetY == offsetVal)
+            {
+                UpdateStatusText($"Expression y(u) offset not changed, still {offsetVal}.");
+            }
+            else
+            {
+                var oldVal = _cc.ExprOffsetY;
+                _cc.ExprOffsetY = offsetVal;
+                UpdateStatusText($"Expression y(u) offset has changed from {oldVal} to: {offsetVal}. " +
+                    $"It will take effect when draw graph again.");
+            }
+
+        }
     }//class
 }

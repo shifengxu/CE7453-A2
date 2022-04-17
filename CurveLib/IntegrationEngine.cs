@@ -22,7 +22,7 @@ namespace CurveLib
             double xRange = points[m].X - points[0].X;
             double h = xRange / m;
             double midSum = 0;
-            for (int i = 1; i < m - 1; i++)
+            for (int i = 1; i <= m - 1; i++)
             {
                 midSum += points[i].Y;
             }

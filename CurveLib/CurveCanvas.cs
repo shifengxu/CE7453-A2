@@ -11,6 +11,12 @@ namespace CurveLib
     {
         public int h = 46; // student index of Xu Shifeng on CE7453
 
+        // Such offset is just to move the curve in the coordinates.
+        // they are for and only for x(u) and y(u).
+        // The Initial purpose is to move the curve above X-axis. that is, y value > 0.
+        public double ExprOffsetX = 0;
+        public double ExprOffsetY = 0;
+
         private readonly List<(double X, double Y)> points = new List<(double X, double Y)>();
 
         // X * TargetRatioX = canvasX; Y * TargetRatioY = canvasY
@@ -47,6 +53,7 @@ namespace CurveLib
             res = 1.5 * Math.Sin(6.2 * u - 0.027 * h);
             res = Math.Exp(res) + 0.1;
             res = 1.5 * res * Math.Cos(12.2 * u);
+            res += ExprOffsetX;
             return res;
         }
 
@@ -56,6 +63,7 @@ namespace CurveLib
             res = Math.Sin(6.2 * u - 0.027 * h);
             res = Math.Exp(res) + 0.1;
             res = res * Math.Sin(12.2 * u);
+            res += ExprOffsetY;
             return res;
         }
 
