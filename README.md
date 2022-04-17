@@ -1,6 +1,9 @@
 # CE7453-A2
 NTU CE7453 Numerical Analysis (2021-2022 Semester 2)
 
+## Tutorials
+For tutorials, please go to [tutorial section](./tutorial) .
+
 ## The required curve
 
 ![](./images/x-y-curve.png)
