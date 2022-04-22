@@ -976,9 +976,15 @@ namespace ParametricCurve
 
         private void saveCoefficientsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (_cc.ExpressionFourierX.a.Count == 0 && _cc.ExpressionFourierY.b.Count == 0)
+            if (_fourierEngine.a.Count == 0 && _fourierEngine.b.Count == 0)
             {
                 MessageBox.Show("Fourier curve not generated. Please draw it first.",
+                    "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+            if (_cc.ExpressionFourierX.a.Count == 0 && _cc.ExpressionFourierY.a.Count == 0)
+            {
+                MessageBox.Show("Fourier curve not chosen as expression.\r\n\r\nPlease click button \"Expr Fourier\".",
                     "Information", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
